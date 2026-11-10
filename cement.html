@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aakrithi Homemart — Storefront</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --brand: #0e7d5c;
+    --brand-dark: #0a5f46;
+    --brand-soft: #e6f4ee;
+    --accent: #d97706;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --bg: #f0f4f3;
+    --card: #ffffff;
+    --red: #b3261e;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: linear-gradient(135deg, #075b41, #0e7d5c);
+    color: #fff; padding: 14px 18px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,.12);
+  }
+  .appbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-bottom: 10px; }
+  .appbar .logo { font-size: 1.25rem; font-weight: 800; letter-spacing: .5px; }
+  .appbar .sub { font-size: .78rem; opacity: .9; font-weight: 500; }
+  .tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .tab {
+    background: rgba(255,255,255,.12); border: none; color: #fff;
+    padding: 9px 14px; font-size: .83rem; font-weight: 700; border-radius: 10px 10px 0 0;
+    cursor: pointer; opacity: .8;
+  }
+  .tab.active { background: var(--bg); color: var(--brand); opacity: 1; }
+  main { max-width: 1100px; margin: 0 auto; padding: 18px 14px 60px; }
+  .pane { display: none; }
+  .pane.active { display: block; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .card h2 { font-size: 1.05rem; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 10px; }
+  label { display: block; font-size: .74rem; font-weight: 700; color: var(--muted); margin: 10px 0 4px; text-transform: uppercase; letter-spacing: .4px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 10px; border: 1.5px solid var(--line); border-radius: 9px;
+    font-size: .88rem; font-family: inherit; background: #fff; color: var(--ink);
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--brand); }
+  textarea { resize: vertical; min-height: 70px; }
+  fieldset { border: 1.5px dashed var(--line); border-radius: 10px; padding: 10px 12px 12px; margin-top: 12px; }
+  legend { font-size: .75rem; font-weight: 800; color: var(--brand); padding: 0 6px; text-transform: uppercase; letter-spacing: .4px; }
+  .btn, button.btn {
+    background: var(--brand); color: #fff; border: none; border-radius: 10px;
+    padding: 10px 16px; font-size: .85rem; font-weight: 700; cursor: pointer;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn.ghost { background: #fff; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn.accent { background: var(--accent); }
+  .btn.danger { background: #fff; color: var(--red); border: 1.5px solid #f2c9c6; }
+  .btn.sm { padding: 6px 10px; font-size: .76rem; border-radius: 8px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .spread { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin: 14px 0 4px; }
+  .stat {
+    background: var(--brand-soft); border: 1px solid #cde7db; border-radius: 12px; padding: 12px;
+  }
+  .stat b { display: block; font-size: 1.25rem; color: var(--brand-dark); }
+  .stat span { font-size: .72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+  table.list { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  table.list td, table.list th { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+  table.list th { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .4px; }
+  .pill { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: .7rem; font-weight: 700; background: var(--brand-soft); color: var(--brand-dark); }
+  .pill.red { background: #fde8e6; color: #9a201a; }
+  .pill.orange { background: #fff3d6; color: #8a6100; }
+  .empty { text-align: center; color: var(--muted); padding: 26px 10px; font-size: .85rem; }
+  .items-wrap { overflow-x: auto; }
+  table.items { width: 100%; border-collapse: collapse; font-size: .85rem; min-width: 620px; }
+  table.items th { background: var(--brand-soft); color: var(--brand-dark); padding: 8px; font-size: .7rem; text-transform: uppercase; letter-spacing: .4px; }
+  table.items td { padding: 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  table.items input { padding: 7px 8px; font-size: .82rem; }
+  .delrow { cursor: pointer; color: var(--red); font-weight: 800; background: none; border: none; font-size: .9rem; }
+  .money { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .right { text-align: right; }
+  .center { text-align: center; }
+  #toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #111827; color: #fff; padding: 11px 18px; border-radius: 12px; font-size: .85rem;
+    opacity: 0; pointer-events: none; transition: all .25s; z-index: 60; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* ============ CALCULATOR ============ */
+  .calc { width: 340px; margin: 0; background: #000; border-radius: 24px; padding: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+  .calc-display { color: #fff; font-size: 3rem; text-align: right; padding: 10px 12px 18px; min-height: 70px; word-wrap: break-word; word-break: break-all; font-weight: 300; }
+  .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .calc-btn { border: none; border-radius: 50%; width: 70px; height: 70px; font-size: 1.5rem; font-weight: 500; cursor: pointer; color: #fff; background: #333; transition: filter .15s; }
+  .calc-btn:active { filter: brightness(1.4); }
+  .calc-btn.fn { background: #a5a5a5; color: #000; }
+  .calc-btn.op { background: #ff9f0a; }
+  .calc-btn.op.active { background: #fff; color: #ff9f0a; }
+  .calc-btn.zero { grid-column: span 2; border-radius: 35px; width: 100%; text-align: left; padding-left: 28px; }
+  .calc-btn.eq { background: #ff9f0a; }
+
+  #print-area { display: none; }
+  #print-area.shown { display: block; margin-top: 6px; }
+  #print-root { display: none; }
+
+  .sheet {
+    width: 210mm; min-height: 297mm; margin: 0 auto;
+    background: #fff; color: #111;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    padding: 10mm 12mm; line-height: 1.45; font-size: .84rem;
+    box-shadow: 0 3px 18px rgba(0, 0, 0, .14);
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  @page { size: A4 portrait; margin: 8mm; }
+
+  .lh-top { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; border-bottom: 3px solid var(--brand); padding-bottom: 10px; }
+  .lh-name { font-size: 1.6rem; font-weight: 800; color: var(--brand-dark); letter-spacing: .5px; }
+  .lh-logo { display: inline-block; height: 64px; width: auto; max-width: 180px; object-fit: contain; border-radius: 8px; }
+  .lh-tag { font-size: .78rem; color: var(--brand); font-weight: 600; }
+  .lh-meta { text-align: right; font-size: .72rem; color: #333; }
+  .lh-meta b { color: #111; }
+  .doc-title { text-align: center; font-size: 1.05rem; font-weight: 800; letter-spacing: 3px; color: #333; margin: 12px 0 8px; }
+  .doc-grid { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; font-size: .8rem; margin-bottom: 8px; }
+  .doc-grid b { font-size: .84rem; }
+  table.bill-items { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: .78rem; }
+  table.bill-items th { background: var(--brand-soft); color: var(--brand-dark); padding: 6px; text-align: left; border: 1px solid #cde7db; font-size: .7rem; text-transform: uppercase; letter-spacing: .4px; }
+  table.bill-items td { border: 1px solid #e3e8e7; padding: 5px; }
+  table.bill-items tr:nth-child(even) td { background: #f8fbfa; }
+  .sum { margin: 8px 0 0 auto; width: 300px; font-size: .78rem; }
+  .sum td { padding: 3px 6px; }
+  .sum .grand { font-weight: 800; font-size: .9rem; border-top: 2px solid #111; background: var(--brand-soft); }
+  .words { font-size: .74rem; margin-top: 8px; font-weight: 600; }
+  .notes { font-size: .74rem; margin-top: 10px; }
+  .sign-row { display: flex; justify-content: flex-end; text-align: center; margin-top: 30px; font-size: .78rem; }
+  .footer-bar { margin-top: auto; border-top: 2px solid var(--brand); padding-top: 10px; text-align: center; font-size: .7rem; color: #444; line-height: 1.7; }
+  .lh-foot { margin-top: 14px; border-top: 2px solid var(--brand); padding-top: 10px; text-align: center; font-size: .7rem; color: #444; line-height: 1.7; }
+  .terms { font-size: .68rem; color: #555; margin-top: 10px; line-height: 1.5; }
+  .terms b { color: #111; }
+
+  @media print {
+    @page { size: A4 portrait; margin: 0; }
+    header, main, #toast, #print-area { display: none !important; }
+    body { background: #fff !important; }
+    #print-root { display: block !important; padding: 0; }
+    .sheet { box-shadow: none; width: 210mm; min-height: 297mm; height: auto; padding: 8mm 10mm; margin: 0; }
+  }
+
+  .search { display: flex; gap: 8px; margin-bottom: 12px; }
+  .search input { flex: 1; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: .7rem; font-weight: 700; }
+  .badge.wholesale { background: #e6f4ee; color: #0a5f46; }
+  .badge.retail { background: #fff3d6; color: #8a6100; }
+  .tag { font-size: .72rem; color: var(--muted); }
+
+  .qty-step { display: inline-flex; align-items: center; gap: 6px; }
+  .qty-step button { width: 24px; height: 24px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; font-weight: 700; }
+  .qty-step span { min-width: 24px; text-align: center; font-weight: 700; }
+
+  .cart-drawer {
+    position: fixed; top: 0; right: -420px; width: 400px; max-width: 92vw; height: 100vh;
+    background: #fff; z-index: 100; box-shadow: -6px 0 24px rgba(0,0,0,.15);
+    transition: right .35s ease; display: flex; flex-direction: column;
+  }
+  .cart-drawer.open { right: 0; }
+  .cd-head { padding: 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .cd-body { flex: 1; overflow-y: auto; padding: 14px; }
+  .cd-foot { padding: 14px; border-top: 1px solid var(--line); }
+  .ci { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .ci-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--brand-soft); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+  .ci-info { flex: 1; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 90; }
+  .overlay.open { opacity: 1; pointer-events: all; }
+
+  .product-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .product-card .p-name { font-weight: 700; font-size: .92rem; }
+  .product-card .p-meta { font-size: .76rem; color: var(--muted); }
+  .product-card .p-price { font-size: 1.1rem; font-weight: 800; color: var(--brand-dark); }
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+
+  @media (max-width: 700px) {
+    .sheet { width: 100%; padding: 6mm; }
+    .lh-name { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="appbar">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div class="logo" id="hb-name">🏗️ AAKRITHI HOMEMART</div>
+        <div class="sub" id="hb-tag">Wholesale & Retail Cement Shop — Billing & Accounts</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="btn ghost sm" onclick="toggleCart()" id="cart-btn">🧾 Make Bill <span class="pill" id="cart-badge">0</span></button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="sell" onclick="showTab('sell')">🏪 Sell Cement</button>
+    <button class="tab" data-tab="bill" onclick="showTab('bill')">🧾 Quick Bill</button>
+    <button class="tab" data-tab="bills" onclick="showTab('bills')">📁 Bills</button>
+    <button class="tab" data-tab="stock" onclick="showTab('stock')">📦 Stock</button>
+    <button class="tab" data-tab="remaining" onclick="showTab('remaining')">📊 Remaining Stock</button>
+    <button class="tab" data-tab="calc" onclick="showTab('calc')">🧮 Calculator</button>
+    <button class="tab" data-tab="ledger" onclick="showTab('ledger')">📒 Ledger</button>
+    <button class="tab" data-tab="accounts" onclick="showTab('accounts')">💰 Accounts</button>
+    <button class="tab" data-tab="reports" onclick="showTab('reports')">📑 Reports</button>
+    <button class="tab" data-tab="company" onclick="showTab('company')">⚙️ Shop</button>
+  </div>
+</header>
+
+<main>
+  <!-- SELL CEMENT -->
+  <section class="pane active" id="pane-sell">
+    <div class="card">
+      <div class="spread">
+        <h2 style="margin:0;">Cement Products</h2>
+        <div class="row">
+          <select id="price-mode" onchange="renderProducts()" style="width:auto;">
+            <option value="retail">Retail prices</option>
+            <option value="wholesale">Wholesale prices</option>
+          </select>
+          <select id="brand-filter" onchange="renderProducts()" style="width:auto;"><option value="">All brands</option></select>
+        </div>
+      </div>
+      <div class="search"><input type="text" id="prod-search" placeholder="Search cement brand / grade / weight…" oninput="renderProducts()"></div>
+      <div class="product-grid" id="product-grid"></div>
+      <div class="empty" id="prod-empty" style="display:none;">No cement products found. Add stock first.</div>
+    </div>
+  </section>
+
+  <!-- QUICK BILL -->
+  <section class="pane" id="pane-bill">
+    <div class="card">
+      <h2>🧾 Cement Tax Invoice</h2>
+      <fieldset>
+        <legend>Bill To</legend>
+        <div class="grid">
+          <div><label>Customer / Firm Name</label><input type="text" id="bi-cust" placeholder="e.g. Rajesh Kumar / ABC Builders"></div>
+          <div><label>Mobile</label><input type="tel" id="bi-mobile" placeholder="10-digit mobile"></div>
+          <div><label>Customer GSTIN</label><input type="text" id="bi-custgst" placeholder="32AAAAA0000A1Z5"></div>
+          <div><label>Invoice Date</label><input type="date" id="bi-date"></div>
+        </div>
+        <label>Address</label>
+        <input type="text" id="bi-addr" placeholder="House / Shop, Street, City, PIN">
+      </fieldset>
+
+      <fieldset>
+        <legend>Cement Items</legend>
+        <div class="items-wrap">
+          <table class="items">
+            <thead><tr><th style="width:30px;">#</th><th>Brand / Grade</th><th style="width:90px;">HSN</th><th style="width:80px;">Bags</th><th style="width:90px;">Weight</th><th style="width:110px;">Rate/Bag (₹)</th><th style="width:90px;">GST%</th><th class="right" style="width:110px;">Amount</th><th style="width:30px;"></th></tr></thead>
+            <tbody id="items-body"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:8px;"><button class="btn ghost sm" onclick="addBillItem()">➕ Add Cement Item</button></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Totals & Transport</legend>
+        <div class="grid">
+          <div><label>Discount %</label><input type="number" id="bi-disc" value="0" min="0" max="100" oninput="recompute()"></div>
+          <div><label>Transport / Freight (₹)</label><input type="number" id="bi-tpt" value="0" min="0" oninput="recompute()"></div>
+          <div><label>Payment Mode</label>
+            <select id="bi-pay"><option>Cash</option><option>UPI</option><option>Bank / NEFT</option><option>Credit (due)</option></select>
+          </div>
+          <div><label>Due Date (if credit)</label><input type="date" id="bi-due"></div>
+        </div>
+        <label>Notes</label>
+        <input type="text" id="bi-note" placeholder="e.g. Freight to pay, unload at site">
+        <div class="spread">
+          <div><b>Grand Total: <span class="money" id="tot-box">₹0</span></b></div>
+          <div class="row">
+            <button class="btn accent" onclick="saveBill(false)">💾 Save Bill</button>
+            <button class="btn" onclick="saveBill(true)">🖨 Save & Print</button>
+            <button class="btn ghost" onclick="saveBillPDF()">📄 Save PDF</button>
+            <button class="btn ghost" onclick="resetBill()">Reset</button>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+    <div id="print-area"></div>
+  </section>
+
+  <!-- SAVED BILLS -->
+  <section class="pane" id="pane-bills">
+    <div class="card">
+      <h2>📁 Saved Bills <span class="pill" id="bills-count"></span></h2>
+      <div class="items-wrap">
+        <table class="list" id="bills-list"></table>
+      </div>
+      <div class="empty" id="bills-empty"></div>
+    </div>
+  </section>
+
+  <!-- STOCK -->
+  <section class="pane" id="pane-stock">
+    <div class="card">
+      <h2>📦 Cement Stock</h2>
+      <div class="grid">
+        <div><label>Brand / Company</label><input type="text" id="st-brand" placeholder="e.g. Unitech, Chettinad, Ultratech"></div>
+        <div><label>Grade / Type</label><input type="text" id="st-grade" placeholder="e.g. PPC, OPC 43, PPC - BOPP"></div>
+        <div><label>Bag Weight</label>
+          <select id="st-weight"><option value="50 kg">50 kg</option><option value="25 kg">25 kg</option><option value="Other">Other</option></select>
+        </div>
+        <div><label>HSN Code</label><input type="text" id="st-hsn" value="25232930" placeholder="25232930"></div>
+        <div><label>Stock Bags</label><input type="number" id="st-stock" min="0" placeholder="0"></div>
+        <div><label>Retail Rate / Bag (₹)</label><input type="number" id="st-retail" min="0" placeholder="e.g. 380"></div>
+        <div><label>Wholesale Rate / Bag (₹)</label><input type="number" id="st-wholesale" min="0" placeholder="e.g. 350"></div>
+        <div><label>GST %</label>
+          <select id="st-gst"><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option><option value="0">0%</option></select>
+        </div>
+      </div>
+      <div><label>Date</label><input type="date" id="st-date"></div>
+      <div style="margin-top:12px;"><button class="btn" onclick="addStock()">➕ Add / Update Stock</button></div>
+    </div>
+    <div class="card">
+      <div class="items-wrap">
+        <table class="list" id="stock-list"></table>
+      </div>
+      <div class="empty" id="stock-empty"></div>
+      <div style="margin-top:10px;"><button class="btn sm" onclick="csvStock()">⬇ Download Stock (CSV)</button></div>
+    </div>
+  </section>
+
+  <!-- REMAINING STOCK -->
+  <section class="pane" id="pane-remaining">
+    <div class="card">
+      <h2>📊 Remaining Stock (after purchases)</h2>
+      <p style="font-size:.78rem;color:#666;margin:0 0 10px;">Live view of how many bags are left. Updates automatically after every bill.</p>
+      <div class="items-wrap">
+        <table class="list" id="remaining-list"></table>
+      </div>
+      <div class="empty" id="remaining-empty">No stock items yet.</div>
+      <div style="margin-top:10px;"><button class="btn sm" onclick="renderRemaining()">🔄 Refresh</button> <button class="btn sm ghost" onclick="csvRemaining()">⬇ Download (CSV)</button></div>
+    </div>
+  </section>
+
+  <!-- CALCULATOR -->
+  <section class="pane" id="pane-calc">
+    <div class="card" style="display:flex;justify-content:center;background:transparent;border:none;box-shadow:none;gap:40px;flex-wrap:wrap;">
+      <div style="width:380px;display:flex;flex-direction:column;gap:12px;">
+        <div class="card" style="margin:0;">
+          <h2>🏷️ Price Check (from stock)</h2>
+          <div>
+            <label>Cement product</label>
+            <select id="pc-item" onchange="priceCheck()" style="width:100%;"></select>
+          </div>
+          <div id="pc-info" style="margin-top:12px;font-size:.9rem;line-height:1.8;"></div>
+          <div class="row" style="margin-top:12px;flex-wrap:wrap;gap:8px;">
+            <button class="btn sm" onclick="pcToCalc('retail')">Use Retail</button>
+            <button class="btn sm ghost" onclick="pcToCalc('wholesale')">Use Wholesale</button>
+          </div>
+        </div>
+        <div class="card" style="margin:0;">
+          <h2>🧮 Calculation History</h2>
+          <div class="items-wrap" style="max-height:220px;overflow-y:auto;">
+            <table class="list" id="calc-history-list"></table>
+          </div>
+          <div class="empty" id="calc-history-empty">No calculations yet.</div>
+          <div style="margin-top:10px;"><button class="btn sm ghost" onclick="copyCalcHistory()">📋 Copy</button> <button class="btn sm ghost" onclick="clearCalcHistory()">🗑 Clear</button></div>
+        </div>
+      </div>
+      <div class="calc">
+        <div id="calc-expr" style="color:#aaa;font-size:1rem;text-align:right;padding:2px 12px 0;min-height:18px;word-break:break-all;"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div class="calc-display" id="calc-display" style="flex:1;margin:0;padding:6px 12px;min-height:48px;">0</div>
+          <button class="calc-btn fn" style="width:44px;height:44px;font-size:1.1rem;flex-shrink:0;" onclick="calcBackspace()">⌫</button>
+        </div>
+        <div class="calc-grid">
+          <button class="calc-btn fn" onclick="calcInput('AC')">AC</button>
+          <button class="calc-btn fn" onclick="calcInput('+/-')">+/-</button>
+          <button class="calc-btn fn" onclick="calcInput('%')">%</button>
+          <button class="calc-btn op" data-op="/" onclick="calcInput('/')">÷</button>
+
+          <button class="calc-btn" onclick="calcInput('7')">7</button>
+          <button class="calc-btn" onclick="calcInput('8')">8</button>
+          <button class="calc-btn" onclick="calcInput('9')">9</button>
+          <button class="calc-btn op" data-op="*" onclick="calcInput('*')">×</button>
+
+          <button class="calc-btn" onclick="calcInput('4')">4</button>
+          <button class="calc-btn" onclick="calcInput('5')">5</button>
+          <button class="calc-btn" onclick="calcInput('6')">6</button>
+          <button class="calc-btn op" data-op="-" onclick="calcInput('-')">−</button>
+
+          <button class="calc-btn" onclick="calcInput('1')">1</button>
+          <button class="calc-btn" onclick="calcInput('2')">2</button>
+          <button class="calc-btn" onclick="calcInput('3')">3</button>
+          <button class="calc-btn op" data-op="+" onclick="calcInput('+')">+</button>
+
+          <button class="calc-btn zero" onclick="calcInput('0')">0</button>
+          <button class="calc-btn" onclick="calcInput('.')">.</button>
+          <button class="calc-btn eq" onclick="calcInput('=')">=</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- (keep ledger) -->
+  <!-- LEDGER -->
+  <section class="pane" id="pane-ledger">
+    <div class="card">
+      <h2>📒 Customer / Supplier Ledger</h2>
+      <div class="grid">
+        <div><label>Date</label><input type="date" id="ld-date"></div>
+        <div><label>Party Name</label><input type="text" id="ld-party" placeholder="Customer or supplier name"></div>
+        <div><label>Type</label>
+          <select id="ld-type"><option>Customer</option><option>Supplier</option></select>
+        </div>
+        <div><label>Amount (₹)</label><input type="number" id="ld-amt" placeholder="0"></div>
+      </div>
+      <div class="grid" style="margin-top:4px;">
+        <div>
+          <label>Dr / Cr</label>
+          <select id="ld-drcr"><option value="dr">Debit (they owe us / we paid supplier)</option><option value="cr">Credit (they paid us / we owe supplier)</option></select>
+        </div>
+        <div><label>Reference / Bill No</label><input type="text" id="ld-ref" placeholder="e.g. INV-001"></div>
+        <div style="grid-column:span 2;"><label>Narration</label><input type="text" id="ld-note" placeholder="e.g. Cement sale on credit"></div>
+      </div>
+      <div style="margin-top:12px;"><button class="btn" onclick="addLedgerEntry()">➕ Add Ledger Entry</button></div>
+    </div>
+    <div class="card">
+      <div class="spread">
+        <h2 style="margin:0;">Ledger Entries</h2>
+        <input type="text" id="ledger-search" placeholder="Search party…" oninput="renderLedger()" style="width:auto;min-width:180px;">
+      </div>
+      <div class="items-wrap">
+        <table class="list" id="ledger-list"></table>
+      </div>
+      <div class="empty" id="ledger-empty"></div>
+      <div style="margin-top:10px;"><button class="btn sm" onclick="csvLedger()">⬇ Download Ledger (CSV)</button></div>
+    </div>
+    <div class="card">
+      <h2>Party Balance Summary</h2>
+      <div class="items-wrap">
+        <table class="list" id="ledger-summary"></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACCOUNTS -->
+  <section class="pane" id="pane-accounts">
+    <div class="card">
+      <h2>💰 Sales Summary</h2>
+      <div class="spread">
+        <div class="stat"><b id="acc-today">₹0</b><span>Today</span></div>
+        <div class="stat"><b id="acc-month">₹0</b><span>This Month</span></div>
+        <div class="stat"><b id="acc-year">₹0</b><span>This Year</span></div>
+        <div class="stat"><b id="acc-total">₹0</b><span>All Time</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🧾 Recent Sales</h2>
+      <div class="items-wrap">
+        <table class="list" id="acc-sales-list"></table>
+      </div>
+      <div class="empty" id="acc-sales-empty">No sales yet.</div>
+      <div style="margin-top:10px;"><button class="btn sm" onclick="csvSales()">⬇ Download Sales (CSV)</button></div>
+    </div>
+    <div class="card">
+      <h2>💸 Expenses</h2>
+      <div class="grid">
+        <div><label>Date</label><input type="date" id="ex-date"></div>
+        <div><label>Category</label>
+          <select id="ex-cat">
+            <option>Rent</option><option>Electricity</option><option>Water</option><option>Internet / SIM</option>
+            <option>Transport / Fuel</option><option>Loading Charge</option><option>Unloading Charge</option><option>Vehicle Charge</option>
+            <option>Wages / Salary</option><option>Maintenance</option>
+            <option>Packaging</option><option>Stationery</option><option>Office</option><option>Miscellaneous</option>
+          </select>
+        </div>
+        <div><label>Amount (₹)</label><input type="number" id="ex-amt" min="1" placeholder="e.g. 500"></div>
+        <div><label>Paid To (name)</label><input type="text" id="ex-name" placeholder="e.g. Vijeesh KK"></div>
+        <div><label>Note</label><input type="text" id="ex-note" placeholder="What was this for?"></div>
+      </div>
+      <div style="margin-top:12px;"><button class="btn" onclick="addExpense()">➕ Add Expense</button></div>
+      <div class="items-wrap" style="margin-top:12px;">
+        <table class="list" id="ex-list"></table>
+      </div>
+      <div class="empty" id="ex-empty">No expenses yet.</div>
+      <div style="margin-top:10px;"><b>Total Expenses: <span class="money" id="ex-total">₹0</span></b></div>
+      <div style="margin-top:10px;"><button class="btn sm" onclick="csvExpenses()">⬇ Download Expenses (CSV)</button></div>
+    </div>
+    <div class="card">
+      <h2>🛒 Purchases (Suppliers)</h2>
+      <div class="spread">
+        <div><b>Total Purchase Amount: <span class="money" id="acc-purchase">₹0</span></b></div>
+      </div>
+      <div class="items-wrap" style="margin-top:12px;">
+        <table class="list" id="acc-purchase-list"></table>
+      </div>
+      <div class="empty" id="acc-purchase-empty">No purchase entries in ledger (add under 📒 Ledger).</div>
+    </div>
+    <div class="card">
+      <h2>📊 Income vs Expense</h2>
+      <div class="spread">
+        <div class="stat"><b id="acc-income">₹0</b><span>Total Income (Sales)</span></div>
+        <div class="stat"><b id="acc-expense">₹0</b><span>Total Expense</span></div>
+        <div class="stat"><b id="acc-net">₹0</b><span>Net</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORTS -->
+  <section class="pane" id="pane-reports">
+    <div class="card">
+      <h2>📈 Profit & Loss (All Time)</h2>
+      <div class="spread">
+        <div class="stat"><b id="rep-income">₹0</b><span>Total Income (Sales)</span></div>
+        <div class="stat"><b id="rep-expense">₹0</b><span>Total Expense</span></div>
+        <div class="stat"><b id="rep-net">₹0</b><span>Net Profit / Loss</span></div>
+      </div>
+      <div class="items-wrap" style="margin-top:12px;">
+        <table class="list" id="rep-pl-list"></table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🧾 GST Summary (HSN-wise)</h2>
+      <div class="items-wrap">
+        <table class="list" id="rep-gst-list"></table>
+      </div>
+      <div class="empty" id="rep-gst-empty">No sales yet.</div>
+      <div style="margin-top:10px;"><b>Total GST: <span class="money" id="rep-gst-total">₹0</span></b></div>
+    </div>
+    <div class="card">
+      <h2>📒 Day Book (Cash Book)</h2>
+      <div class="items-wrap">
+        <table class="list" id="rep-daybook"></table>
+      </div>
+      <div class="empty" id="rep-daybook-empty">No transactions yet.</div>
+    </div>
+    <div class="card">
+      <h2>⚖️ Balance Sheet (Approx.)</h2>
+      <div class="spread">
+        <div class="stat"><b id="rep-assets">₹0</b><span>Assets (Stock + Cash)</span></div>
+        <div class="stat"><b id="rep-liab">₹0</b><span>Liabilities (Supplier Dues)</span></div>
+        <div class="stat"><b id="rep-capital">₹0</b><span>Capital (Assets − Liabilities)</span></div>
+      </div>
+      <div class="items-wrap" style="margin-top:12px;">
+        <table class="list" id="rep-bs-list"></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPANY SETTINGS -->
+  <section class="pane" id="pane-company">
+    <div class="card">
+      <h2>⚙️ Shop / Letterhead Details</h2>
+      <div class="grid">
+        <div><label>Shop Name</label><input type="text" id="co-name" value="AAKRITHI HOMEMART PRIVATE LIMITED"></div>
+        <div><label>Tagline</label><input type="text" id="co-tag" value="Cement Shop"></div>
+      </div>
+      <label>Address</label>
+      <input type="text" id="co-addr" value="KALLEPADAM, PALAKKAD, KERALA - 680587" placeholder="Full shop address">
+      <div class="grid">
+        <div><label>Phone</label><input type="text" id="co-phone"></div>
+        <div><label>Email</label><input type="text" id="co-email"></div>
+        <div><label>GSTIN</label><input type="text" id="co-gstin"></div>
+      </div>
+      <label>Bank Details</label>
+      <input type="text" id="co-bank" placeholder="Bank · A/C no. · IFSC">
+      <label>Terms & Conditions</label>
+      <textarea id="co-terms" rows="5">1. Goods once sold will not be taken back.
+2. Interest @18% p.a. will be charged on overdue bills.
+3. All disputes subject to local jurisdiction.</textarea>
+      <div style="margin-top:14px;"><button class="btn" onclick="saveCompany()">💾 Save Shop Details</button></div>
+    </div>
+    <div class="card">
+      <h2>🗑 Data Tools</h2>
+      <div class="row" style="margin-bottom:8px;">
+        <button class="btn danger sm" onclick="if(confirm('Delete ALL data (bills, stock, ledger, expenses, history)?')){localStorage.setItem('cem_bills',JSON.stringify([]));localStorage.setItem('cem_stock',JSON.stringify([]));localStorage.setItem('cem_ledger',JSON.stringify([]));localStorage.setItem('cem_expenses',JSON.stringify([]));localStorage.setItem('cem_calc_history',JSON.stringify([]));location.reload();}">🗑 Clear ALL Data</button>
+      </div>
+      <div class="row">
+        <button class="btn danger sm" onclick="if(confirm('Delete ALL saved bills?')){localStorage.setItem('cem_bills',JSON.stringify([]));renderBills();showToast('All bills cleared')}">Clear Bills</button>
+        <button class="btn danger sm" onclick="if(confirm('Delete ALL stock?')){localStorage.setItem('cem_stock',JSON.stringify([]));renderStock();renderProducts();showToast('Stock cleared')}">Clear Stock</button>
+        <button class="btn danger sm" onclick="if(confirm('Delete ALL ledger entries?')){localStorage.setItem('cem_ledger',JSON.stringify([]));renderLedger();showToast('Ledger cleared')}">Clear Ledger</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>📊 Google Sheets Sync</h2>
+      <p style="font-size:.78rem;color:#666;margin:0 0 10px;">Send all data (stock, bills, ledger, expenses, accounts) to a Google Sheet. Requires a one-time Google Apps Script setup (instructions below).</p>
+      <label>Apps Script Web App URL</label>
+      <input type="text" id="gs-url" placeholder="https://script.google.com/macros/s/.../exec">
+      <div class="row" style="margin-top:10px;flex-wrap:wrap;gap:8px;">
+        <button class="btn sm" onclick="saveGsUrl()">💾 Save URL</button>
+        <button class="btn sm" onclick="sendToGoogleSheets()">⬆ Send All Data to Google Sheets</button>
+      </div>
+      <div id="gs-status" style="font-size:.8rem;margin-top:10px;"></div>
+      <details style="margin-top:12px;border:1px dashed var(--line);border-radius:10px;padding:10px;">
+        <summary style="cursor:pointer;font-weight:700;font-size:.84rem;">📖 Setup instructions (one-time)</summary>
+        <div style="margin-top:10px;font-size:.76rem;line-height:1.7;color:#555;">
+          <p>1. Open <a href="https://sheets.new" target="_blank">sheets.new</a> to create a new Google Sheet.</p>
+          <p>2. In the sheet: <b>Extensions → Apps Script</b>. Delete the default code and paste the script below. Click <b>Save</b>.</p>
+          <p>3. Click <b>Deploy → New deployment → Type: Web app</b>. Set "Execute as: Me" and "Who has access: Anyone". Click Deploy and copy the Web App URL.</p>
+          <p>4. Paste the URL above and click <b>Save URL</b>, then <b>Send All Data</b>.</p>
+          <p style="margin-top:8px;"><b>Apps Script code (copy all):</b></p>
+          <textarea id="gs-script" readonly style="width:100%;min-height:280px;font-size:.72rem;font-family:monospace;">function doPost(e){
+  try{
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var raw = e.postData.contents;
+    var data = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+    function writeSheet(name, rows){
+      var sh = ss.getSheetByName(name);
+      if(!sh){ sh = ss.insertSheet(name); }
+      sh.clear();
+      if(rows && rows.length && rows[0] && rows[0].length){
+        sh.getRange(1,1,rows.length,rows[0].length).setValues(rows);
+      }
+    }
+    if(data.stock) writeSheet('Stock', data.stock);
+    if(data.remaining) writeSheet('Remaining', data.remaining);
+    if(data.bills) writeSheet('Bills', data.bills);
+    if(data.ledger) writeSheet('Ledger', data.ledger);
+    if(data.expenses) writeSheet('Expenses', data.expenses);
+    if(data.accounts) writeSheet('Accounts', data.accounts);
+    return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+  }catch(err){
+    return ContentService.createTextOutput(JSON.stringify({ok:false,error:String(err)})).setMimeType(ContentService.MimeType.JSON);
+  }
+}</textarea>
+          <button class="btn sm ghost" onclick="copyGsScript()">📋 Copy Script</button>
+        </div>
+      </details>
+    </div>
+    <div class="card">
+      <h2>🗂 Data Backup (save & stay in this HTML)</h2>
+      <p style="font-size:.78rem;color:#666;margin:0 0 10px;">Export all saved data (bills, stock, ledger, shop details) to a JSON file, or import a backup to restore it. Data also persists automatically in your browser.</p>
+      <div class="row" style="flex-wrap:wrap;gap:8px;">
+        <button class="btn sm" onclick="exportData()">⬇ Export JSON</button>
+        <label class="btn sm ghost" style="cursor:pointer;margin:0;">⬆ Import JSON <input type="file" id="import-file" accept="application/json" onchange="importData(this)" style="display:none;"></label>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="cart-overlay" onclick="toggleCart()"></div>
+<div class="cart-drawer" id="cart-drawer">
+  <div class="cd-head"><h3>🧾 Make Bill</h3><button class="btn ghost sm" onclick="toggleCart()">✕</button></div>
+  <div class="cd-body" id="cart-body"></div>
+  <div class="cd-foot">
+    <div class="spread"><b>Total:</b><b class="money" id="cart-total">₹0</b></div>
+    <button class="btn" style="width:100%;" onclick="checkoutCart()">🧾 Make Bill</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="print-root"></div>
+<input type="file" id="bill-pdf-input" accept="application/pdf" style="display:none;">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const byId = id => document.getElementById(id);
+const MS = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(e){ return null; } };
+const SS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const fmtIN = n => (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+const money = n => '₹' + fmtIN(n);
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+const DEFAULT_STOCK = [
+  { id: 1, brand: 'Unitech', grade: 'OPC 43 Grade', weight: '50 kg', hsn: '25232930', stock: 500, retail: 390, wholesale: 360, gst: 28, date: todayISO() },
+  { id: 2, brand: 'Chettinad', grade: 'PPC', weight: '50 kg', hsn: '25232930', stock: 500, retail: 385, wholesale: 355, gst: 28, date: todayISO() },
+  { id: 3, brand: 'Ultratech', grade: 'PPC', weight: '50 kg', hsn: '25232930', stock: 500, retail: 410, wholesale: 380, gst: 28, date: todayISO() },
+  { id: 4, brand: 'Bharathi', grade: 'PPC', weight: '50 kg', hsn: '25232930', stock: 300, retail: 375, wholesale: 350, gst: 28, date: todayISO() }
+];
+
+let cart = [];
+let toastTimer;
+let lastPrint = '';
+let pdfBusy = false;
+
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + id));
+  if (id === 'bills') renderBills();
+  if (id === 'stock') renderStock();
+  if (id === 'remaining') renderRemaining();
+  if (id === 'calc') { calcUpdate(); pcFill(); renderCalcHistory(); }
+  if (id === 'ledger') renderLedger();
+  if (id === 'accounts') { renderExpenses(); renderAccounts(); }
+  if (id === 'reports') renderReports();
+  if (id === 'sell') { renderProducts(); updateCartBadge(); }
+}
+
+function showToast(msg) {
+  const t = byId('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ---------- COMPANY ---------- */
+function getCompany() {
+  return MS('cem_company') || {
+    name: 'AAKRITHI HOMEMART PRIVATE LIMITED', tag: 'Cement Shop',
+    addr: 'KALLEPADAM, PALAKKAD, KERALA - 680587',
+    phone: '', email: '', gstin: '32ABFCA1312C1ZN',
+    bank: 'HDFC Bank Ltd, Vadakkancherry Branch, A/c: 50100234567890, IFSC: HDFC0001234. Registered Office: Door No 14/1713, Krishnakripa Building, Opp KAM Jewellery, Vadakkancherry, Palakkad, Kerala - 678683',
+    terms: '1. Goods once sold will not be taken back.\n2. Interest @18% p.a. will be charged on overdue bills.\n3. All disputes subject to Palakkad jurisdiction.'
+  };
+}
+function saveCompany() {
+  SS('cem_company', {
+    name: byId('co-name').value, tag: byId('co-tag').value, addr: byId('co-addr').value,
+    phone: byId('co-phone').value, email: byId('co-email').value, gstin: byId('co-gstin').value,
+    bank: byId('co-bank').value, terms: byId('co-terms').value
+  });
+  showToast('Shop details saved');
+}
+function loadCompanyFields() {
+  const c = getCompany();
+  byId('co-name').value = c.name || '';
+  byId('co-tag').value = c.tag || '';
+  byId('co-addr').value = c.addr || '';
+  byId('co-phone').value = c.phone || '';
+  byId('co-email').value = c.email || '';
+  byId('co-gstin').value = c.gstin || '';
+  byId('co-bank').value = c.bank || '';
+  byId('co-terms').value = c.terms || '';
+}
+
+/* ---------- STOCK ---------- */
+function getStock() { return MS('cem_stock') || DEFAULT_STOCK.slice(); }
+function saveStock(list) { SS('cem_stock', list); }
+function newStockId(list) { return list.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0) + 1; }
+async function addStock() {
+  const brand = byId('st-brand').value.trim();
+  const grade = byId('st-grade').value.trim();
+  if (!brand || !grade) { showToast('Enter brand and grade'); return; }
+  const stBillEl = byId('st-bill');
+  const billFile = stBillEl && stBillEl.files && stBillEl.files[0];
+  let billPdf = null, billName = null;
+  if (billFile) {
+    billPdf = await new Promise((resolve) => {
+      const r = new FileReader();
+      r.onload = e => resolve(e.target.result);
+      r.readAsDataURL(billFile);
+    });
+    billName = billFile.name;
+  }
+  let list = getStock();
+  const existing = list.find(x => x.brand.toLowerCase() === brand.toLowerCase() && x.grade.toLowerCase() === grade.toLowerCase());
+  const item = {
+    id: existing ? existing.id : newStockId(list),
+    brand, grade, weight: byId('st-weight').value, hsn: byId('st-hsn').value,
+    stock: Number(byId('st-stock').value) || 0,
+    retail: Number(byId('st-retail').value) || 0,
+    wholesale: Number(byId('st-wholesale').value) || 0,
+    gst: Number(byId('st-gst').value) || 0,
+    date: byId('st-date').value || todayISO(),
+    billPdf: billPdf || (existing ? existing.billPdf : null),
+    billName: billName || (existing ? existing.billName : null)
+  };
+  if (existing) {
+    const idx = list.indexOf(existing);
+    list[idx] = item;
+  } else {
+    list.push(item);
+  }
+  saveStock(list);
+  renderStock(); renderProducts(); updateBrandFilter(); pcFill();
+  ['st-brand','st-grade','st-stock','st-retail','st-wholesale'].forEach(id => byId(id).value = '');
+  byId('st-hsn').value = '25232930';
+  byId('st-date').value = todayISO();
+  showToast(existing ? 'Stock updated' : 'Stock added');
+}
+function editStock(id) {
+  const x = getStock().find(s => s.id === id);
+  if (!x) return;
+  byId('st-brand').value = x.brand;
+  byId('st-grade').value = x.grade;
+  byId('st-weight').value = x.weight;
+  byId('st-hsn').value = x.hsn;
+  byId('st-stock').value = x.stock;
+  byId('st-retail').value = x.retail;
+  byId('st-wholesale').value = x.wholesale;
+  byId('st-gst').value = String(x.gst);
+  byId('st-date').value = x.date || todayISO();
+  byId('st-brand').focus();
+  showToast('Editing ' + x.brand + ' ' + x.grade + ' — modify and click Add/Update');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+let pendingStockBillId = null;
+function attachStockBill(id) {
+  pendingStockBillId = id;
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'application/pdf';
+  inp.onchange = function () { handleStockBillAttach(inp, id); };
+  inp.click();
+}
+function handleStockBillAttach(inp, id) {
+  const file = inp.files && inp.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const list = getStock();
+    const x = list.find(s => s.id === id);
+    if (x) { x.billPdf = e.target.result; x.billName = file.name; saveStock(list); renderStock(); showToast('✓ Bill attached'); }
+    pendingStockBillId = null;
+  };
+  reader.readAsDataURL(file);
+}
+function viewStockBill(id) {
+  const x = getStock().find(s => s.id === id);
+  if (!x || !x.billPdf) { showToast('No bill attached'); return; }
+  const w = window.open();
+  if (w) { w.document.write('<iframe src="' + x.billPdf + '" style="width:100%;height:100%;border:0;"></iframe>'); }
+  else { window.location.href = x.billPdf; }
+}
+function renderRemaining() {
+  const list = getStock();
+  const tb = byId('remaining-list');
+  const empty = byId('remaining-empty');
+  if (empty) empty.style.display = list.length ? 'none' : 'block';
+  tb.innerHTML = '<tr><th>Brand</th><th>Grade</th><th>Weight</th><th>Remaining Bags</th><th>Retail</th><th>Wholesale</th></tr>' +
+    list.map(x => `<tr>
+      <td><b>${esc(x.brand)}</b></td><td>${esc(x.grade)}</td><td>${esc(x.weight)}</td>
+      <td class="${x.stock<50?'pill red':'money'}">${x.stock}</td>
+      <td class="money">${money(x.retail)}</td><td class="money">${money(x.wholesale)}</td>
+    </tr>`).join('');
+}
+function renderStock() {
+  const list = getStock();
+  const tbody = byId('stock-list');
+  byId('stock-empty').style.display = list.length ? 'none' : 'block';
+  tbody.innerHTML = '<tr><th>Date</th><th>Brand</th><th>Grade</th><th>Weight</th><th>HSN</th><th>Stock</th><th>Retail</th><th>Wholesale</th><th>GST</th><th></th></tr>' +
+    list.map(x => `<tr>
+      <td>${esc(x.date || '')}</td><td><b>${esc(x.brand)}</b></td><td>${esc(x.grade)}</td><td>${esc(x.weight)}</td><td>${esc(x.hsn)}</td>
+      <td class="${x.stock<50?'pill red':'money'}">${x.stock}</td>
+      <td class="money">${money(x.retail)}</td><td class="money">${money(x.wholesale)}</td><td>${x.gst}%</td>
+      <td class="row"><button class="ap-btn" title="Edit" onclick="editStock(${x.id})">✏️</button>${x.billPdf ? `<button class="ap-btn" title="View bill" onclick="viewStockBill(${x.id})">👁</button>` : ''}<button class="ap-btn" title="Attach bill" onclick="attachStockBill(${x.id})">📎</button><button class="delrow" onclick="deleteStock(${x.id})">✕</button></td>
+    </tr>`).join('');
+}
+function deleteStock(id) {
+  if (!confirm('Delete this stock item?')) return;
+  saveStock(getStock().filter(x => x.id !== id));
+  renderStock(); renderProducts(); updateBrandFilter(); pcFill();
+}
+function updateBrandFilter() {
+  const brands = [...new Set(getStock().map(x => x.brand))];
+  const s = byId('brand-filter');
+  s.innerHTML = '<option value="">All brands</option>' + brands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+}
+
+/* ---------- SELL / CART ---------- */
+function renderProducts() {
+  const mode = byId('price-mode').value;
+  const brand = byId('brand-filter').value;
+  const q = byId('prod-search').value.trim().toLowerCase();
+  const list = getStock().filter(x => {
+    const matchBrand = !brand || x.brand === brand;
+    const matchQ = !q || (x.brand + ' ' + x.grade + ' ' + x.weight).toLowerCase().includes(q);
+    return matchBrand && matchQ;
+  });
+  const g = byId('product-grid');
+  byId('prod-empty').style.display = list.length ? 'none' : 'block';
+  g.innerHTML = list.map(x => {
+    const price = mode === 'wholesale' ? x.wholesale : x.retail;
+    const badge = mode === 'wholesale' ? '<span class="badge wholesale">Wholesale</span>' : '<span class="badge retail">Retail</span>';
+    return `<div class="product-card">
+      <div class="p-name">🏗️ ${esc(x.brand)} ${esc(x.grade)}</div>
+      <div class="p-meta">${esc(x.weight)} · HSN ${esc(x.hsn)} · Stock: <b>${x.stock}</b> bags</div>
+      <div class="p-price">${money(price)} <small style="font-size:.7rem;color:#666;">/ bag + ${x.gst}% GST</small></div>
+      <div class="row" style="margin-top:4px;">
+        ${badge}
+        <div class="qty-step"><button onclick="changeCartQty(${x.id},-1)">−</button><span id="pq-${x.id}">0</span><button onclick="changeCartQty(${x.id},1)">+</button></div>
+      </div>
+    </div>`;
+  }).join('');
+  updateCartQtyDisplay();
+}
+function changeCartQty(id, delta) {
+  const stock = getStock().find(x => x.id === id);
+  if (!stock) return;
+  const existing = cart.find(c => c.id === id);
+  let qty = (existing ? existing.qty : 0) + delta;
+  if (qty < 0) qty = 0;
+  if (qty > stock.stock) { showToast('Only ' + stock.stock + ' bags in stock'); qty = stock.stock; }
+  if (qty === 0) cart = cart.filter(c => c.id !== id);
+  else if (existing) existing.qty = qty;
+  else cart.push({ id, qty });
+  updateCartBadge(); updateCartQtyDisplay(); renderMiniCart();
+}
+function updateCartQtyDisplay() {
+  cart.forEach(c => { const el = byId('pq-' + c.id); if (el) el.textContent = c.qty; });
+}
+function updateCartBadge() {
+  const total = cart.reduce((s, c) => s + c.qty, 0);
+  byId('cart-badge').textContent = total;
+}
+function toggleCart() {
+  byId('cart-drawer').classList.toggle('open');
+  byId('cart-overlay').classList.toggle('open');
+  renderMiniCart();
+}
+function renderMiniCart() {
+  const list = getStock();
+  const body = byId('cart-body');
+  if (!cart.length) { body.innerHTML = '<div class="empty">No items to bill</div>'; byId('cart-total').textContent = '₹0'; return; }
+  const mode = byId('price-mode').value;
+  let total = 0;
+  body.innerHTML = cart.map(c => {
+    const p = list.find(x => x.id === c.id);
+    if (!p) return '';
+    const rate = mode === 'wholesale' ? p.wholesale : p.retail;
+    const amt = rate * c.qty;
+    total += amt;
+    return `<div class="ci"><div class="ci-icon">🏗️</div><div class="ci-info"><b>${esc(p.brand)} ${esc(p.grade)}</b><div class="tag">${c.qty} × ${money(rate)}</div></div><div class="money">${money(amt)}</div></div>`;
+  }).join('');
+  byId('cart-total').textContent = money(total);
+}
+function checkoutCart() {
+  if (!cart.length) { showToast('Cart is empty'); return; }
+  toggleCart();
+  showTab('bill');
+  resetBill();
+  const list = getStock();
+  const mode = byId('price-mode').value;
+  cart.forEach(c => {
+    const p = list.find(x => x.id === c.id);
+    if (p) addBillItem({ brand: p.brand + ' ' + p.grade, hsn: p.hsn, qty: c.qty, rate: mode === 'wholesale' ? p.wholesale : p.retail, gst: p.gst });
+  });
+  cart = []; updateCartBadge();
+}
+
+/* ---------- BILL ---------- */
+function stockOptions(selected) {
+  return '<option value="">-- Select from stock --</option>' +
+    getStock().map(x =>
+      `<option value="${x.id}" ${selected == x.id ? 'selected' : ''}>${esc(x.brand)} ${esc(x.grade)} (${x.stock} bags avail)</option>`
+    ).join('');
+}
+function addBillItem(pre = null) {
+  const tbody = byId('items-body');
+  const tr = document.createElement('tr');
+  tr.dataset.id = Date.now() + Math.random();
+  const preStock = pre ? getStock().find(x => (x.brand + ' ' + x.grade).toLowerCase() === String(pre.brand || '').toLowerCase()) : null;
+  tr.innerHTML = `<td class="center">${tbody.children.length + 1}</td>
+    <td><select class="bi-item" onchange="fillBillItem(this)" style="width:100%;">${stockOptions(preStock ? preStock.id : '')}</select></td>
+    <td><input type="text" class="bi-hsn" style="width:90px;" value="${pre ? esc(pre.hsn) : '25232930'}"></td>
+    <td><input type="number" class="bi-qty" style="width:70px;" min="1" value="${pre ? pre.qty : '1'}"></td>
+    <td><input type="text" class="bi-weight" style="width:80px;" value="${preStock ? esc(preStock.weight) : '50 kg'}"></td>
+    <td><input type="number" class="bi-rate" style="width:100px;" min="0" value="${pre ? pre.rate : ''}"></td>
+    <td><input type="number" class="bi-gst" style="width:60px;" min="0" value="${pre ? pre.gst : '28'}"></td>
+    <td class="right money bi-amt">₹0</td>
+    <td><button class="delrow" onclick="this.closest('tr').remove();recompute()">✕</button></td>`;
+  tbody.appendChild(tr);
+  tr.querySelectorAll('input,select').forEach(i => i.addEventListener('input', recompute));
+  if (preStock) fillBillItem(tr.querySelector('.bi-item'));
+  recompute();
+}
+function fillBillItem(sel) {
+  const tr = sel.closest('tr');
+  const s = getStock().find(x => x.id === Number(sel.value));
+  if (!s) return;
+  tr.querySelector('.bi-hsn').value = s.hsn;
+  tr.querySelector('.bi-weight').value = s.weight;
+  tr.querySelector('.bi-rate').value = byId('price-mode') ? (byId('price-mode').value === 'wholesale' ? s.wholesale : s.retail) : s.retail;
+  tr.querySelector('.bi-gst').value = s.gst;
+  recompute();
+}
+function recompute() {
+  let gross = 0, totalTax = 0;
+  const rows = document.querySelectorAll('#items-body tr');
+  rows.forEach((tr, i) => {
+    tr.cells[0].textContent = i + 1;
+    const qty = Number(tr.querySelector('.bi-qty').value) || 0;
+    const rate = Number(tr.querySelector('.bi-rate').value) || 0;
+    const gst = Number(tr.querySelector('.bi-gst').value) || 0;
+    const taxable = qty * rate;
+    const tax = taxable * gst / 100;
+    const amt = taxable + tax;
+    tr.querySelector('.bi-amt').textContent = money(amt);
+    gross += taxable;
+    totalTax += tax;
+  });
+  const discPct = Number(byId('bi-disc').value) || 0;
+  const discount = gross * discPct / 100;
+  const transport = Number(byId('bi-tpt').value) || 0;
+  const taxableAfterDisc = gross - discount;
+  // keep tax proportional after discount
+  const taxRatio = gross ? totalTax / gross : 0;
+  const taxAfterDisc = taxableAfterDisc * taxRatio;
+  const grand = taxableAfterDisc + taxAfterDisc + transport;
+  byId('tot-box').textContent = money(grand);
+  return { gross, discount, taxableAfterDisc, taxAfterDisc, transport, grand };
+}
+function resetBill() {
+  byId('bi-cust').value = '';
+  byId('bi-mobile').value = '';
+  byId('bi-custgst').value = '';
+  byId('bi-date').value = todayISO();
+  byId('bi-addr').value = '';
+  byId('bi-disc').value = '0';
+  byId('bi-tpt').value = '0';
+  byId('bi-pay').value = 'Cash';
+  byId('bi-due').value = '';
+  byId('bi-note').value = '';
+  byId('items-body').innerHTML = '';
+  recompute();
+}
+function saveBill(print) {
+  const cust = byId('bi-cust').value.trim();
+  if (!cust) { showToast('Enter customer name'); return null; }
+  if (!document.querySelectorAll('#items-body tr').length) { showToast('Add at least one item'); return null; }
+  const totals = recompute();
+  const items = [];
+  document.querySelectorAll('#items-body tr').forEach(tr => {
+    const sel = tr.querySelector('.bi-item');
+    const stock = getStock().find(x => x.id === Number(sel.value));
+    const name = stock ? (stock.brand + ' ' + stock.grade) : sel.value;
+    items.push({
+      item: name,
+      hsn: tr.querySelector('.bi-hsn').value,
+      qty: Number(tr.querySelector('.bi-qty').value) || 0,
+      weight: tr.querySelector('.bi-weight').value,
+      rate: Number(tr.querySelector('.bi-rate').value) || 0,
+      gst: Number(tr.querySelector('.bi-gst').value) || 0
+    });
+  });
+  const bills = MS('cem_bills') || [];
+  const invNo = 'CEM-' + String(bills.length + 1).padStart(4, '0');
+  const bill = {
+    id: Date.now(), invNo,
+    date: byId('bi-date').value || todayISO(),
+    due: byId('bi-due').value,
+    cust, mobile: byId('bi-mobile').value, custGst: byId('bi-custgst').value, addr: byId('bi-addr').value,
+    items, totals,
+    payMode: byId('bi-pay').value,
+    note: byId('bi-note').value,
+    ts: Date.now()
+  };
+  bills.unshift(bill);
+  SS('cem_bills', bills);
+  // reduce stock
+  const stock = getStock();
+  bill.items.forEach(it => {
+    const prod = stock.find(s => (s.brand + ' ' + s.grade).toLowerCase() === it.item.toLowerCase());
+    if (prod) prod.stock = Math.max(0, prod.stock - it.qty);
+  });
+  saveStock(stock);
+  // ledger entry for credit
+  if (bill.payMode === 'Credit (due)') {
+    const ledger = MS('cem_ledger') || [];
+    ledger.unshift({ id: Date.now(), date: bill.date, party: bill.cust, type: 'Customer', drcr: 'dr', amt: bill.totals.grand, ref: bill.invNo, note: 'Cement sale on credit' });
+    SS('cem_ledger', ledger);
+  }
+  showToast('Bill saved: ' + invNo);
+  if (print) printBill(bill);
+  resetBill();
+  renderStock(); renderProducts(); renderRemaining(); renderAccounts(); renderReports();
+  return bill;
+}
+
+/* ---------- PRINT BILL ---------- */
+function printBill(bill, doPrint) {
+  if (doPrint === undefined) doPrint = true;
+  const c = getCompany();
+  const rows = bill.items.map((it, i) => {
+    const taxable = it.qty * it.rate;
+    const tax = taxable * it.gst / 100;
+    return `<tr><td>${i+1}</td><td>${esc(it.item)}<br><span class="tag">${esc(it.weight)}</span></td><td>${esc(it.hsn)}</td><td class="right">${it.qty}</td><td class="right">${money(it.rate)}</td><td class="right">${it.gst}%</td><td class="right money">${money(taxable + tax)}</td></tr>`;
+  }).join('');
+  const html = `<div class="sheet">
+    <div class="lh-top">
+      <div>
+        <div class="lh-name">${esc(c.name)}</div>
+        <div class="lh-tag">${esc(c.tag)}</div>
+        <div style="font-size:.74rem;color:#555;margin-top:6px;max-width:360px;">${esc(c.addr)}</div>
+      </div>
+      <div class="lh-meta">
+        ${c.phone ? `<div><b>Phone:</b> ${esc(c.phone)}</div>` : ''}
+        ${c.email ? `<div><b>Email:</b> ${esc(c.email)}</div>` : ''}
+        ${c.gstin ? `<div><b>GSTIN:</b> ${esc(c.gstin)}</div>` : ''}
+      </div>
+    </div>
+    <div class="doc-title">TAX INVOICE</div>
+    <div class="doc-grid">
+      <div>
+        <div><b>Bill To:</b> ${esc(bill.cust)}</div>
+        <div>${esc(bill.addr)}</div>
+        ${bill.custGst ? `<div><b>GSTIN:</b> ${esc(bill.custGst)}</div>` : ''}
+        ${bill.mobile ? `<div><b>Mobile:</b> ${esc(bill.mobile)}</div>` : ''}
+      </div>
+      <div style="text-align:right;">
+        <div><b>Invoice No:</b> ${esc(bill.invNo)}</div>
+        <div><b>Date:</b> ${bill.date}</div>
+        ${bill.due ? `<div><b>Due Date:</b> ${bill.due}</div>` : ''}
+        <div><b>Payment:</b> ${esc(bill.payMode)}</div>
+      </div>
+    </div>
+    <table class="bill-items">
+      <thead><tr><th>#</th><th>Description</th><th>HSN</th><th class="right">Bags</th><th class="right">Rate/Bag</th><th class="right">GST</th><th class="right">Amount</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <table class="sum">
+      <tr><td>Taxable Amount</td><td class="right money">${money(bill.totals.gross)}</td></tr>
+      ${bill.totals.discount ? `<tr><td>Discount</td><td class="right money">-${money(bill.totals.discount)}</td></tr>` : ''}
+      <tr><td>Tax</td><td class="right money">${money(bill.totals.taxAfterDisc)}</td></tr>
+      ${bill.totals.transport ? `<tr><td>Transport</td><td class="right money">${money(bill.totals.transport)}</td></tr>` : ''}
+      <tr class="grand"><td>Grand Total</td><td class="right money">${money(bill.totals.grand)}</td></tr>
+    </table>
+    <div class="words"><b>Amount in words:</b> ${numberToWords(Math.round(bill.totals.grand))} RUPEES ONLY</div>
+    ${bill.note ? `<div class="notes"><b>Note:</b> ${esc(bill.note)}</div>` : ''}
+    <div class="terms"><b>Terms & Conditions:</b><br>${esc(c.terms).replace(/\n/g, '<br>')}</div>
+    <div class="sign-row">
+      <div>
+        <div style="border-top:1px solid #111;padding-top:4px;min-width:140px;">For ${esc(c.name)}</div>
+        <div style="margin-top:24px;font-weight:800;">Authorized Signatory</div>
+      </div>
+    </div>
+    <div class="lh-foot">
+      <div class="lh-foot-name">${esc(c.name)}</div>
+      <div>${esc(c.addr)} · ${c.phone || ''} · ${c.email || ''}</div>
+      ${c.bank ? `<div>Bank: ${esc(c.bank)}</div>` : ''}
+    </div>
+  </div>`;
+  byId('print-root').innerHTML = html;
+  lastPrint = html;
+  if (doPrint) window.print();
+}
+function previewBill(id) {
+  const bill = (MS('cem_bills') || []).find(b => b.id === id);
+  if (bill) printBill(bill);
+}
+function viewBillSheet(id) {
+  const bill = (MS('cem_bills') || []).find(b => b.id === id);
+  if (!bill) return;
+  printBill(bill, false);
+  const root = byId('print-root');
+  root.style.display = 'block';
+  const bar = document.createElement('div');
+  bar.style.textAlign = 'center';
+  bar.style.marginTop = '12px';
+  bar.innerHTML = '<button class="btn" onclick="window.print()">🖨 Print</button> ' +
+    '<button class="btn ghost" onclick="billPDF(' + bill.id + ')">📄 PDF</button> ' +
+    '<button class="btn ghost" onclick="closeBillView()">✕ Close</button>';
+  root.appendChild(bar);
+  root.scrollIntoView({ behavior: 'smooth' });
+}
+function closeBillView() {
+  const root = byId('print-root');
+  root.style.display = 'none';
+  root.innerHTML = '';
+  lastPrint = '';
+}
+function billPDF(id) {
+  const bill = (MS('cem_bills') || []).find(b => b.id === id);
+  if (!bill) return;
+  printBill(bill, false);
+  savePDF(bill.invNo);
+}
+function saveBillPDF() {
+  const bill = saveBill(false);
+  if (!bill) return;
+  printBill(bill, false);
+  savePDF(bill.invNo);
+}
+async function savePDF(fname) {
+  if (pdfBusy) return;
+  if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined' || !jspdf.jsPDF) { showToast('PDF engine not loaded — using Print dialog'); return doPrint(); }
+  const root = byId('print-root');
+  root.innerHTML = lastPrint || '';
+  const sheet = root.querySelector('.sheet');
+  if (!sheet) { showToast('Nothing to save yet'); return; }
+  pdfBusy = true;
+  showToast('Generating PDF…');
+  const slug = String(fname || 'Bill').replace(/[^A-Za-z0-9._-]+/g, '_');
+  html2canvas(sheet, { scale: 1.5, useCORS: true, backgroundColor: '#ffffff', onclone: d => { const r = d.getElementById('print-root'); if (r) { r.style.display = 'block'; r.style.position = 'absolute'; r.style.top = '0'; r.style.left = '0'; } } }).then(async canvas => {
+    window.__canvasSize = canvas.width + 'x' + canvas.height;
+    const doc = new jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const imgData = canvas.toDataURL('image/jpeg', 0.85);
+    const pageWidth = 210;
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * pageWidth / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+    heightLeft -= 297;
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      doc.addPage();
+      doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= 297;
+    }
+    try {
+      const blob = doc.output('blob');
+      if (window.showSaveFilePicker) {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: slug + '.pdf',
+          types: [{ description: 'PDF', accept: { 'application/pdf': ['.pdf'] } }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        pdfBusy = false;
+        showToast('✓ PDF saved');
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = slug + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 1000);
+    } catch (e) {
+      if (e && e.name === 'AbortError') { pdfBusy = false; showToast('Save cancelled'); return; }
+      pdfBusy = false; showToast('PDF failed — using Print dialog'); doPrint(); return;
+    }
+    pdfBusy = false;
+    showToast('✓ PDF saved');
+  }).catch(function (e) { pdfBusy = false; showToast('PDF failed — using Print dialog'); doPrint(); });
+}
+function doPrint() { window.print(); }
+
+function numberToWords(n) {
+  if (n === 0) return 'ZERO';
+  const a = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
+  const b = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
+  const c = ['', 'THOUSAND', 'LAKH', 'CRORE'];
+  function two(n) {
+    if (n < 20) return a[n];
+    return b[Math.floor(n / 10)] + (n % 10 ? ' ' + a[n % 10] : '');
+  }
+  function three(n) {
+    return n > 99 ? a[Math.floor(n / 100)] + ' HUNDRED' + (n % 100 ? ' ' + two(n % 100) : '') : two(n);
+  }
+  let words = '', i = 0;
+  while (n > 0) {
+    const chunk = n % 1000;
+    if (chunk) words = three(chunk) + (c[i] ? ' ' + c[i] : '') + (words ? ' ' + words : '');
+    n = Math.floor(n / 1000);
+    i++;
+  }
+  return words.trim();
+}
+
+/* ---------- SAVED BILLS ---------- */
+function renderBills() {
+  const bills = MS('cem_bills') || [];
+  byId('bills-count').textContent = bills.length;
+  const tb = byId('bills-list');
+  byId('bills-empty').style.display = bills.length ? 'none' : 'block';
+  tb.innerHTML = '<tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th></th></tr>' +
+    bills.map(b => `<tr>
+      <td><b>${esc(b.invNo)}</b></td><td>${b.date}</td><td>${esc(b.cust)}</td>
+      <td>${b.items.length} item(s)</td><td class="money">${money(b.totals.grand)}</td><td>${esc(b.payMode)}</td>
+      <td class="row"><button class="btn sm" onclick="previewBill(${b.id})">🖨 Print</button><button class="btn ghost sm" onclick="viewBillSheet(${b.id})">👁 View</button><button class="btn ghost sm" onclick="billPDF(${b.id})">📄 PDF</button>${b.pdf ? '<button class="btn ghost sm" onclick="viewBillPDF(' + b.id + ')">👁 PDF</button>' : ''}<button class="btn ghost sm" onclick="attachBillPDF(${b.id})">📎 Attach</button><button class="btn ghost sm" onclick="deleteBill(${b.id})">🗑</button></td>
+    </tr>`).join('');
+}
+function deleteBill(id) {
+  if (!confirm('Delete this bill?')) return;
+  SS('cem_bills', (MS('cem_bills') || []).filter(b => b.id !== id));
+  renderBills();
+}
+let pendingBillPdfId = null;
+function attachBillPDF(id) {
+  pendingBillPdfId = id;
+  const inp = byId('bill-pdf-input');
+  inp.value = '';
+  inp.onchange = handleBillPdfAttach;
+  inp.click();
+}
+function handleBillPdfAttach(inp) {
+  const file = inp.files && inp.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const bills = MS('cem_bills') || [];
+    const b = bills.find(x => x.id === pendingBillPdfId);
+    if (b) { b.pdf = e.target.result; b.pdfName = file.name; SS('cem_bills', bills); showToast('✓ PDF attached'); renderBills(); }
+    pendingBillPdfId = null;
+  };
+  reader.readAsDataURL(file);
+}
+function viewBillPDF(id) {
+  const b = (MS('cem_bills') || []).find(x => x.id === id);
+  if (!b || !b.pdf) { showToast('No PDF attached'); return; }
+  const w = window.open();
+  if (w) { w.document.write('<iframe src=\"' + b.pdf + '\" style=\"width:100%;height:100%;border:0;\"></iframe>'); }
+  else { window.location.href = b.pdf; }
+}
+
+/* ---------- LEDGER ---------- */
+function getLedger() { return MS('cem_ledger') || []; }
+function addLedgerEntry() {
+  const party = byId('ld-party').value.trim();
+  const amt = Number(byId('ld-amt').value) || 0;
+  if (!party || !amt) { showToast('Enter party and amount'); return; }
+  const list = getLedger();
+  list.unshift({
+    id: Date.now(),
+    date: byId('ld-date').value || todayISO(),
+    party, type: byId('ld-type').value, drcr: byId('ld-drcr').value,
+    amt, ref: byId('ld-ref').value, note: byId('ld-note').value
+  });
+  SS('cem_ledger', list);
+  renderLedger();
+  renderAccounts();
+  renderReports();
+  ['ld-party','ld-amt','ld-ref','ld-note'].forEach(id => byId(id).value = '');
+  showToast('Ledger entry added');
+}
+function renderLedger() {
+  const list = getLedger();
+  const q = byId('ledger-search').value.trim().toLowerCase();
+  const filtered = q ? list.filter(x => x.party.toLowerCase().includes(q)) : list;
+  byId('ledger-empty').style.display = filtered.length ? 'none' : 'block';
+  const tb = byId('ledger-list');
+  tb.innerHTML = '<tr><th>Date</th><th>Party</th><th>Type</th><th>Ref</th><th>Debit</th><th>Credit</th><th>Narration</th><th></th></tr>' +
+    filtered.map(x => `<tr>
+      <td>${x.date}</td><td><b>${esc(x.party)}</b></td><td>${esc(x.type)}</td><td>${esc(x.ref)}</td>
+      <td class="money ${x.drcr==='dr'?'':'muted'}">${x.drcr==='dr'?money(x.amt):'-'}</td>
+      <td class="money ${x.drcr==='cr'?'':'muted'}">${x.drcr==='cr'?money(x.amt):'-'}</td>
+      <td>${esc(x.note)}</td>
+      <td><button class="delrow" onclick="deleteLedger(${x.id})">✕</button></td>
+    </tr>`).join('');
+
+  // summary
+  const parties = {};
+  list.forEach(x => {
+    const bal = parties[x.party] || { party: x.party, type: x.type, dr: 0, cr: 0 };
+    if (x.drcr === 'dr') bal.dr += x.amt; else bal.cr += x.amt;
+    parties[x.party] = bal;
+  });
+  byId('ledger-summary').innerHTML = '<tr><th>Party</th><th>Type</th><th>Debit</th><th>Credit</th><th>Balance</th></tr>' +
+    Object.values(parties).map(p => {
+      const net = p.dr - p.cr;
+      return `<tr><td><b>${esc(p.party)}</b></td><td>${esc(p.type)}</td><td class="money">${money(p.dr)}</td><td class="money">${money(p.cr)}</td><td class="money ${net>0?'':'muted'}">${net>0?money(net)+' Dr':net<0?money(-net)+' Cr':'₹0'}</td></tr>`;
+    }).join('');
+}
+function deleteLedger(id) {
+  if (!confirm('Delete this ledger entry?')) return;
+  SS('cem_ledger', getLedger().filter(x => x.id !== id));
+  renderLedger();
+}
+
+/* ---------- DATA BACKUP ---------- */
+function exportData() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.indexOf('cem_') === 0) data[k] = localStorage.getItem(k);
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'cement-backup.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast('✓ Data exported');
+}
+function downloadCSV(filename, rows) {
+  if (!rows || !rows.length) { showToast('Nothing to download'); return; }
+  const csv = rows.map(r => r.map(c => {
+    const v = String(c == null ? '' : c);
+    return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  }).join(',')).join('\\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast('✓ Downloaded ' + filename);
+}
+function csvStock() {
+  const rows = [['Date','Brand','Grade','Weight','HSN','Stock (bags)','Retail','Wholesale','GST%']];
+  getStock().forEach(x => rows.push([x.date||'', x.brand, x.grade, x.weight, x.hsn, x.stock, x.retail, x.wholesale, x.gst]));
+  downloadCSV('stock.csv', rows);
+}
+function csvRemaining() {
+  const rows = [['Brand','Grade','Weight','Remaining Bags','Retail','Wholesale']];
+  getStock().forEach(x => rows.push([x.brand, x.grade, x.weight, x.stock, x.retail, x.wholesale]));
+  downloadCSV('remaining-stock.csv', rows);
+}
+function csvLedger() {
+  const rows = [['Date','Party','Type','Dr/Cr','Amount','Ref','Narration']];
+  getLedger().forEach(x => rows.push([x.date, x.party, x.type, x.drcr, x.amt, x.ref, x.note]));
+  downloadCSV('ledger.csv', rows);
+}
+function csvSales() {
+  const rows = [['Invoice','Date','Customer','Items','Total','Payment']];
+  (MS('cem_bills') || []).forEach(b => rows.push([b.invNo, b.date, b.cust, b.items.length, b.totals ? b.totals.grand : 0, b.payMode]));
+  downloadCSV('sales.csv', rows);
+}
+function csvExpenses() {
+  const rows = [['Date','Paid To','Category','Amount','Note']];
+  getExpenses().forEach(e => rows.push([e.date, e.name || '', e.cat, e.amt, e.note]));
+  downloadCSV('expenses.csv', rows);
+}
+function importData(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      Object.keys(data).forEach(function (k) {
+        if (k.indexOf('cem_') === 0) localStorage.setItem(k, data[k]);
+      });
+      showToast('✓ Data imported. Reloading…');
+      setTimeout(function () { location.reload(); }, 900);
+    } catch (err) { showToast('Invalid backup file'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+/* ---------- EXPENSES ---------- */
+function getExpenses() { return MS('cem_expenses') || []; }
+function saveExpenses(list) { SS('cem_expenses', list); }
+function addExpense() {
+  const amt = Number(byId('ex-amt').value) || 0;
+  if (!amt) { showToast('Enter amount'); return; }
+  const list = getExpenses();
+  list.unshift({
+    id: Date.now(),
+    date: byId('ex-date').value || todayISO(),
+    cat: byId('ex-cat').value,
+    amt,
+    name: byId('ex-name').value.trim(),
+    note: byId('ex-note').value.trim()
+  });
+  saveExpenses(list);
+  renderExpenses();
+  renderAccounts();
+  renderReports();
+  byId('ex-amt').value = '';
+  byId('ex-name').value = '';
+  byId('ex-note').value = '';
+  showToast('Expense added');
+}
+function deleteExpense(id) {
+  if (!confirm('Delete this expense?')) return;
+  saveExpenses(getExpenses().filter(e => e.id !== id));
+  renderExpenses();
+  renderAccounts();
+}
+function renderExpenses() {
+  const list = getExpenses();
+  const tb = byId('ex-list');
+  const empty = byId('ex-empty');
+  if (empty) empty.style.display = list.length ? 'none' : 'block';
+  tb.innerHTML = '<tr><th>Date</th><th>Paid To</th><th>Category</th><th>Note</th><th class="right">Amount</th><th></th></tr>' +
+    list.map(e => `<tr>
+      <td>${e.date}</td><td><b>${esc(e.name || '—')}</b></td><td>${esc(e.cat)}</td><td>${esc(e.note)}</td>
+      <td class="right money">${money(e.amt)}</td>
+      <td><button class="delrow" onclick="deleteExpense(${e.id})">✕</button></td>
+    </tr>`).join('');
+  const total = list.reduce((s, e) => s + e.amt, 0);
+  const totEl = byId('ex-total');
+  if (totEl) totEl.textContent = money(total);
+}
+
+/* ---------- ACCOUNTS ---------- */
+function renderAccounts() {
+  const bills = MS('cem_bills') || [];
+  const now = new Date();
+  const todayKey = todayISO();
+  const monthKey = todayKey.slice(0, 7);
+  const yearKey = todayKey.slice(0, 4);
+  let today = 0, month = 0, year = 0, total = 0;
+  bills.forEach(b => {
+    const amt = (b.totals && b.totals.grand) ? b.totals.grand : 0;
+    total += amt;
+    if (b.date === todayKey) today += amt;
+    if (String(b.date).slice(0, 7) === monthKey) month += amt;
+    if (String(b.date).slice(0, 4) === yearKey) year += amt;
+  });
+  const set = (id, v) => { const el = byId(id); if (el) el.textContent = money(v); };
+  set('acc-today', today);
+  set('acc-month', month);
+  set('acc-year', year);
+  set('acc-total', total);
+
+  // recent sales table
+  const stb = byId('acc-sales-list');
+  const sempty = byId('acc-sales-empty');
+  if (sempty) sempty.style.display = bills.length ? 'none' : 'block';
+  if (stb) {
+    stb.innerHTML = '<tr><th>Invoice</th><th>Date</th><th>Customer</th><th class="right">Amount</th></tr>' +
+      bills.slice(0, 20).map(b => `<tr>
+        <td><b>${esc(b.invNo)}</b></td><td>${esc(b.date)}</td><td>${esc(b.cust)}</td>
+        <td class="right money">${money(b.totals ? b.totals.grand : 0)}</td>
+      </tr>`).join('');
+  }
+
+  // purchases from ledger (supplier entries, debit)
+  const ledger = getLedger();
+  const purchases = ledger.filter(e => e.type === 'Supplier' && e.drcr === 'dr');
+  const pTotal = purchases.reduce((s, e) => s + (e.amt || 0), 0);
+  const pel = byId('acc-purchase'); if (pel) pel.textContent = money(pTotal);
+  const ptb = byId('acc-purchase-list');
+  const pempty = byId('acc-purchase-empty');
+  if (pempty) pempty.style.display = purchases.length ? 'none' : 'block';
+  if (ptb) {
+    ptb.innerHTML = '<tr><th>Date</th><th>Party</th><th>Ref</th><th class="right">Amount</th></tr>' +
+      purchases.slice(0, 20).map(e => `<tr>
+        <td>${esc(e.date)}</td><td><b>${esc(e.party)}</b></td><td>${esc(e.ref)}</td>
+        <td class="right money">${money(e.amt)}</td>
+      </tr>`).join('');
+  }
+
+  // income vs expense
+  const expenses = getExpenses();
+  const eTotal = expenses.reduce((s, e) => s + (e.amt || 0), 0);
+  set('acc-income', total);
+  set('acc-expense', eTotal);
+  set('acc-net', total - eTotal);
+  const exTot = byId('ex-total'); if (exTot) exTot.textContent = money(eTotal);
+}
+
+/* ---------- GOOGLE SHEETS ---------- */
+function getGsUrl() { return (localStorage.getItem('cem_gs_url') || '').trim(); }
+function saveGsUrl() {
+  const url = byId('gs-url').value.trim();
+  localStorage.setItem('cem_gs_url', url);
+  const st = byId('gs-status'); if (st) st.textContent = url ? '✓ URL saved' : 'URL cleared';
+  showToast(url ? '✓ Google Sheets URL saved' : 'URL cleared');
+}
+function copyGsScript() {
+  const ta = byId('gs-script');
+  ta.select();
+  try { document.execCommand('copy'); showToast('✓ Script copied'); } catch (e) { showToast('Copy failed — select manually'); }
+}
+async function sendToGoogleSheets() {
+  const url = getGsUrl() || byId('gs-url').value.trim();
+  if (!url) { showToast('Paste the Apps Script URL first'); return; }
+  localStorage.setItem('cem_gs_url', url);
+  const status = byId('gs-status');
+  if (status) status.textContent = 'Sending…';
+  const stock = getStock().map(x => [x.date||'', x.brand, x.grade, x.weight, x.hsn, x.stock, x.retail, x.wholesale, x.gst]);
+  const remaining = getStock().map(x => [x.brand, x.grade, x.weight, x.stock, x.retail, x.wholesale]);
+  const bills = (MS('cem_bills') || []).map(b => [b.invNo, b.date, b.cust, b.items.length, b.totals ? b.totals.grand : 0, b.payMode]);
+  const ledger = getLedger().map(e => [e.date, e.party, e.type, e.drcr, e.amt, e.ref, e.note]);
+  const expenses = getExpenses().map(e => [e.date, e.cat, e.amt, e.note]);
+  const bills2 = MS('cem_bills') || [];
+  const now = new Date(); const tk = todayISO();
+  let today=0, month=0, year=0, total=0;
+  bills2.forEach(b => { const a = b.totals?b.totals.grand:0; total+=a; if(b.date===tk) today+=a; if(String(b.date).slice(0,7)===tk.slice(0,7)) month+=a; if(String(b.date).slice(0,4)===tk.slice(0,4)) year+=a; });
+  const accounts = [['Metric','Amount'],['Today',today],['This Month',month],['This Year',year],['All Time',total],['Expenses',expenses.reduce((s,e)=>s+e.amt,0)],['Net',total-expenses.reduce((s,e)=>s+e.amt,0)]];
+  const payload = {
+    stock: [['Date','Brand','Grade','Weight','HSN','Stock','Retail','Wholesale','GST%']].concat(stock),
+    remaining: [['Brand','Grade','Weight','Remaining','Retail','Wholesale']].concat(remaining),
+    bills: [['Invoice','Date','Customer','Items','Total','Payment']].concat(bills),
+    ledger: [['Date','Party','Type','Dr/Cr','Amount','Ref','Narration']].concat(ledger),
+    expenses: [['Date','Category','Amount','Note']].concat(expenses),
+    accounts: accounts
+  };
+  try {
+    await fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
+    if (status) status.textContent = '✓ Sent (check your Google Sheet)';
+    showToast('✓ Data sent to Google Sheets');
+  } catch (e) {
+    if (status) status.textContent = '✗ Failed: ' + e.message;
+    showToast('Send failed');
+  }
+}
+
+/* ---------- CALCULATOR ---------- */
+let calcDisplay = '0';
+let calcPrev = null;
+let calcOp = null;
+let calcReset = false;
+let calcExpr = '';
+function calcFmt(n) {
+  if (!isFinite(n)) return String(n);
+  const r = Math.round(n * 1e10) / 1e10;
+  return String(r);
+}
+function calcUpdate() {
+  const el = byId('calc-display');
+  if (el) {
+    const n = Number(calcDisplay);
+    el.textContent = isNaN(n) ? calcDisplay : calcFmt(n);
+  }
+  document.querySelectorAll('.calc-btn.op').forEach(b => {
+    b.classList.toggle('active', calcOp === b.dataset.op && calcReset);
+  });
+}
+function calcBackspace() {
+  if (calcDisplay !== '0' && !calcReset) {
+    calcDisplay = calcDisplay.length > 1 ? calcDisplay.slice(0, -1) : '0';
+    if (calcOp) {
+      const parts = calcExpr.split(' ');
+      parts[parts.length - 1] = calcDisplay;
+      calcExpr = parts.join(' ');
+    } else {
+      calcExpr = calcDisplay;
+    }
+    calcUpdate(); updateCalcExpr();
+  }
+}
+function calcOpSymbol(op) { return op === '*' ? '×' : op === '/' ? '÷' : op; }
+function updateCalcExpr() {
+  const el = byId('calc-expr');
+  if (el) el.textContent = calcExpr;
+}
+function calcInput(v) {
+  if (v === 'AC') { calcDisplay = '0'; calcPrev = null; calcOp = null; calcReset = false; calcExpr = ''; calcUpdate(); updateCalcExpr(); return; }
+  if (v === '+/-') { calcDisplay = String(Number(calcDisplay) * -1); if (calcExpr) calcExpr = calcExpr.replace(/[\d.]+$/, calcDisplay); calcUpdate(); updateCalcExpr(); return; }
+  if (v === '%') { calcExpr = (calcExpr ? calcExpr : calcDisplay) + '%'; calcDisplay = String(Number(calcDisplay) / 100); calcReset = true; calcUpdate(); updateCalcExpr(); return; }
+  if (['+','-','*','/'].includes(v)) {
+    if (calcOp && !calcReset) {
+      calcPrev = calcCompute(calcPrev, calcDisplay, calcOp);
+      calcDisplay = String(calcPrev);
+    } else {
+      calcPrev = Number(calcDisplay);
+    }
+    calcExpr = calcDisplay + ' ' + calcOpSymbol(v) + ' ';
+    calcOp = v; calcReset = true; calcUpdate(); updateCalcExpr(); return;
+  }
+  if (v === '=') {
+    if (calcOp) {
+      const res = calcCompute(calcPrev, calcDisplay, calcOp);
+      const expr = calcExpr;
+      calcExpr = calcExpr + ' =';
+      calcDisplay = String(res);
+      calcPrev = null; calcOp = null; calcReset = true;
+      calcUpdate(); updateCalcExpr();
+      addCalcHistory(expr, calcDisplay);
+    }
+    return;
+  }
+  if (v === '.') {
+    if (calcReset) { calcDisplay = '0.'; calcReset = false; calcExpr = '0.'; }
+    else if (!calcDisplay.includes('.')) { calcDisplay += '.'; }
+    if (calcOp) {
+      const parts = calcExpr.split(' ');
+      parts[parts.length - 1] = calcDisplay;
+      calcExpr = parts.join(' ');
+    } else {
+      calcExpr = calcDisplay;
+    }
+    calcUpdate(); updateCalcExpr(); return;
+  }
+  if (calcReset) { calcDisplay = v; calcReset = false; }
+  else { calcDisplay = calcDisplay === '0' ? v : calcDisplay + v; }
+  if (calcOp) {
+    const parts = calcExpr.split(' ');
+    parts[parts.length - 1] = calcDisplay;
+    calcExpr = parts.join(' ');
+  } else {
+    calcExpr = calcDisplay;
+  }
+  calcUpdate(); updateCalcExpr();
+}
+function calcCompute(a, b, op) {
+  a = Number(a); b = Number(b);
+  if (op === '+') return a + b;
+  if (op === '-') return a - b;
+  if (op === '*') return a * b;
+  if (op === '/') return b === 0 ? 0 : a / b;
+  if (op === '^') return Math.pow(a, b);
+  return b;
+}
+
+
+/* ---------- PRICE CHECK ---------- */
+function pcFill() {
+  const sel = byId('pc-item');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- Select product --</option>' +
+    getStock().map(x => `<option value="${x.id}">${esc(x.brand)} ${esc(x.grade)} (${x.stock} bags)</option>`).join('');
+  if (cur) sel.value = cur;
+  priceCheck();
+}
+function priceCheck() {
+  const sel = byId('pc-item');
+  if (!sel) return;
+  const s = getStock().find(x => x.id === Number(sel.value));
+  const info = byId('pc-info');
+  if (!info) return;
+  if (!s) { info.innerHTML = 'Select a product to see its price.'; return; }
+  info.innerHTML = '<b>' + esc(s.brand) + ' ' + esc(s.grade) + '</b><br>' +
+    'Weight: ' + esc(s.weight) + ' · HSN ' + esc(s.hsn) + '<br>' +
+    'Retail: <b>' + money(s.retail) + '</b>/bag · Wholesale: <b>' + money(s.wholesale) + '</b>/bag<br>' +
+    'GST: ' + s.gst + '% · Available: <b>' + s.stock + '</b> bags<br>' +
+    'Retail value of all stock: ' + money(s.retail * s.stock);
+}
+function pcToCalc(mode) {
+  const s = getStock().find(x => x.id === Number(byId('pc-item').value));
+  if (!s) { showToast('Select a product'); return; }
+  const price = mode === 'wholesale' ? s.wholesale : s.retail;
+  calcDisplay = String(price);
+  calcReset = true;
+  calcUpdate();
+  showToast('Price loaded into calculator');
+}
+
+/* ---------- CALC HISTORY ---------- */
+function getCalcHistory() { return MS('cem_calc_history') || []; }
+function saveCalcHistory(list) { SS('cem_calc_history', list); }
+function addCalcHistory(expr, result) {
+  const list = getCalcHistory();
+  list.unshift({ id: Date.now(), expr: expr, result: result, ts: Date.now() });
+  if (list.length > 50) list.pop();
+  saveCalcHistory(list);
+  renderCalcHistory();
+}
+function clearCalcHistory() {
+  if (!confirm('Clear calculation history?')) return;
+  saveCalcHistory([]);
+  renderCalcHistory();
+}
+function copyCalcHistory() {
+  const list = getCalcHistory();
+  if (!list.length) { showToast('No history to copy'); return; }
+  const text = list.map((h, i) => (i + 1) + '. ' + h.expr + ' = ' + h.result).join('\\n');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => showToast('✓ History copied')).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast('✓ History copied'); } catch (e) { showToast('Copy failed'); }
+  ta.remove();
+}
+function renderCalcHistory() {
+  const list = getCalcHistory();
+  const tb = byId('calc-history-list');
+  const empty = byId('calc-history-empty');
+  if (empty) empty.style.display = list.length ? 'none' : 'block';
+  if (tb) {
+    tb.innerHTML = '<tr><th>#</th><th>Expression</th><th class="right">Result</th></tr>' +
+      list.map((h, i) => `<tr>
+        <td>${i + 1}</td>
+        <td>${esc(h.expr)}</td>
+        <td class="right money">${esc(h.result)}</td>
+      </tr>`).join('');
+  }
+}
+
+/* ---------- CALC KEYBOARD ---------- */
+function calcKeydown(e) {
+  const pane = byId('pane-calc');
+  if (!pane || !pane.classList.contains('active')) return;
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+  const k = e.key;
+  if (/^[0-9]$/.test(k)) { calcInput(k); e.preventDefault(); return; }
+  if (k === '.') { calcInput('.'); e.preventDefault(); return; }
+  if (k === '+') { calcInput('+'); e.preventDefault(); return; }
+  if (k === '-') { calcInput('-'); e.preventDefault(); return; }
+  if (k === '*') { calcInput('*'); e.preventDefault(); return; }
+  if (k === '/') { calcInput('/'); e.preventDefault(); return; }
+  if (k === 'Enter' || k === '=') { calcInput('='); e.preventDefault(); return; }
+  if (k === 'Backspace' || k === 'Delete') { calcBackspace(); e.preventDefault(); return; }
+  if (k === 'Escape') { calcInput('AC'); e.preventDefault(); return; }
+  if (k === '%') { calcInput('%'); e.preventDefault(); return; }
+}
+
+/* ---------- REPORTS ---------- */
+function renderReports() {
+  const bills = MS('cem_bills') || [];
+  const expenses = getExpenses();
+  const ledger = getLedger();
+  const stock = getStock();
+
+  // P&L
+  const income = bills.reduce((s, b) => s + (b.totals ? b.totals.grand : 0), 0);
+  const expense = expenses.reduce((s, e) => s + (e.amt || 0), 0);
+  const net = income - expense;
+  const set = (id, v) => { const el = byId(id); if (el) el.textContent = money(v); };
+  set('rep-income', income);
+  set('rep-expense', expense);
+  set('rep-net', net);
+  const plTb = byId('rep-pl-list');
+  if (plTb) {
+    plTb.innerHTML = '<tr><th>Particulars</th><th class="right">Amount</th></tr>' +
+      '<tr><td><b>Total Sales (Income)</b></td><td class="right money">' + money(income) + '</td></tr>' +
+      '<tr><td>Total Expenses</td><td class="right money">-' + money(expense) + '</td></tr>' +
+      '<tr><td><b>Net Profit / (Loss)</b></td><td class="right money"><b>' + money(net) + '</b></td></tr>';
+  }
+
+  // GST summary (HSN-wise)
+  const gstMap = {};
+  bills.forEach(b => {
+    (b.items || []).forEach(it => {
+      const hsn = it.hsn || '25232930';
+      const taxable = (it.qty || 0) * (it.rate || 0);
+      const tax = taxable * (it.gst || 0) / 100;
+      if (!gstMap[hsn]) gstMap[hsn] = { hsn, taxable: 0, tax: 0, qty: 0 };
+      gstMap[hsn].taxable += taxable;
+      gstMap[hsn].tax += tax;
+      gstMap[hsn].qty += (it.qty || 0);
+    });
+  });
+  const gstTb = byId('rep-gst-list');
+  const gstEmpty = byId('rep-gst-empty');
+  const gstKeys = Object.keys(gstMap);
+  if (gstEmpty) gstEmpty.style.display = gstKeys.length ? 'none' : 'block';
+  if (gstTb) {
+    gstTb.innerHTML = '<tr><th>HSN</th><th class="right">Qty</th><th class="right">Taxable</th><th class="right">GST</th></tr>' +
+      gstKeys.map(k => {
+        const g = gstMap[k];
+        return `<tr><td>${esc(g.hsn)}</td><td class="right">${g.qty}</td><td class="right money">${money(g.taxable)}</td><td class="right money">${money(g.tax)}</td></tr>`;
+      }).join('');
+  }
+  const gstTotal = Object.values(gstMap).reduce((s, g) => s + g.tax, 0);
+  const gstTotEl = byId('rep-gst-total'); if (gstTotEl) gstTotEl.textContent = money(gstTotal);
+
+  // Day book (chronological)
+  const entries = [];
+  bills.forEach(b => entries.push({ date: b.date, desc: 'Sale ' + b.invNo + ' - ' + b.cust, amt: (b.totals ? b.totals.grand : 0), type: 'in' }));
+  expenses.forEach(e => entries.push({ date: e.date, desc: 'Expense: ' + e.cat + (e.name ? ' (' + e.name + ')' : ''), amt: e.amt, type: 'out' }));
+  ledger.forEach(l => entries.push({ date: l.date, desc: l.type + ': ' + l.party + (l.note ? ' - ' + l.note : ''), amt: l.amt, type: l.drcr === 'dr' ? 'out' : 'in' }));
+  entries.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const dbTb = byId('rep-daybook');
+  const dbEmpty = byId('rep-daybook-empty');
+  if (dbEmpty) dbEmpty.style.display = entries.length ? 'none' : 'block';
+  if (dbTb) {
+    dbTb.innerHTML = '<tr><th>Date</th><th>Description</th><th class="right">In</th><th class="right">Out</th></tr>' +
+      entries.map(e => `<tr>
+        <td>${esc(e.date)}</td><td>${esc(e.desc)}</td>
+        <td class="right money">${e.type === 'in' ? money(e.amt) : '-'}</td>
+        <td class="right money">${e.type === 'out' ? money(e.amt) : '-'}</td>
+      </tr>`).join('');
+  }
+
+  // Balance sheet (approx)
+  const stockValue = stock.reduce((s, x) => s + (x.stock || 0) * (x.wholesale || 0), 0);
+  const cash = income - expense;
+  const assets = stockValue + cash;
+  const liab = ledger.filter(l => l.type === 'Supplier' && l.drcr === 'cr').reduce((s, l) => s + (l.amt || 0), 0) -
+               ledger.filter(l => l.type === 'Supplier' && l.drcr === 'dr').reduce((s, l) => s + (l.amt || 0), 0);
+  const liabilities = liab > 0 ? liab : 0;
+  const capital = assets - liabilities;
+  set('rep-assets', assets);
+  set('rep-liab', liabilities);
+  set('rep-capital', capital);
+  const bsTb = byId('rep-bs-list');
+  if (bsTb) {
+    bsTb.innerHTML = '<tr><th>Particulars</th><th class="right">Amount</th></tr>' +
+      '<tr><td>Stock (at wholesale value)</td><td class="right money">' + money(stockValue) + '</td></tr>' +
+      '<tr><td>Cash / Bank (Income − Expense)</td><td class="right money">' + money(cash) + '</td></tr>' +
+      '<tr><td><b>Total Assets</b></td><td class="right money"><b>' + money(assets) + '</b></td></tr>' +
+      '<tr><td>Supplier Dues (Creditors)</td><td class="right money">' + money(liabilities) + '</td></tr>' +
+      '<tr><td><b>Capital (Assets − Liabilities)</b></td><td class="right money"><b>' + money(capital) + '</b></td></tr>';
+  }
+}
+
+/* ---------- INIT ---------- */
+window.addEventListener('DOMContentLoaded', () => {
+  byId('bi-date').value = todayISO();
+  byId('ld-date').value = todayISO();
+  const sd = byId('st-date'); if (sd) sd.value = todayISO();
+  const exd = byId('ex-date'); if (exd) exd.value = todayISO();
+  const gsu = byId('gs-url'); if (gsu) gsu.value = getGsUrl();
+  pcFill();
+  renderCalcHistory();
+  document.addEventListener('keydown', calcKeydown);
+  loadCompanyFields();
+  updateBrandFilter();
+  renderProducts();
+  renderStock();
+  renderRemaining();
+  renderBills();
+  renderLedger();
+  renderExpenses();
+  renderAccounts();
+  renderReports();
+});
+</script>
+</body>
+</html>
