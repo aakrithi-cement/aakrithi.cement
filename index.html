@@ -589,12 +589,18 @@
       <h2>📊 Google Sheets Sync</h2>
       <p style="font-size:.78rem;color:#666;margin:0 0 10px;">Send all data (stock, bills, ledger, expenses, accounts) to a Google Sheet. Requires a one-time Google Apps Script setup (instructions below).</p>
       <label>Apps Script Web App URL</label>
-      <input type="text" id="gs-url" placeholder="https://script.google.com/macros/s/.../exec">
+      <input type="text" id="gs-url" value="https://script.google.com/macros/s/AKfycbyZVG-5nlpkYnZWa2Ap87w9HkvzHP5m4XMwtcEObR3G0jIQelVXPSd6RR-F9F-vTM25SA/exec" placeholder="https://script.google.com/macros/s/.../exec">
       <div class="row" style="margin-top:10px;flex-wrap:wrap;gap:8px;">
         <button class="btn sm" onclick="saveGsUrl()">💾 Save URL</button>
         <button class="btn sm" onclick="sendToGoogleSheets()">⬆ Send All Data to Google Sheets</button>
+        <button class="btn sm ghost" onclick="testGsUrl()">🔍 Test URL</button>
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="gs-auto" style="width:auto;" onchange="saveGsAuto()">
+        <label for="gs-auto" style="margin:0;font-size:.8rem;">Auto-sync to Google Sheets on every change</label>
       </div>
       <div id="gs-status" style="font-size:.8rem;margin-top:10px;"></div>
+      <p style="font-size:.76rem;color:#666;margin-top:8px;">Your Google Sheet: <a href="https://docs.google.com/spreadsheets/d/1X7PVJ2sTIhNT5m0rCi7JfqxJhTpUgUP-sM2zcSMspnU/edit?usp=sharing" target="_blank" rel="noopener">Open Sheet ↗</a></p>
       <details style="margin-top:12px;border:1px dashed var(--line);border-radius:10px;padding:10px;">
         <summary style="cursor:pointer;font-weight:700;font-size:.84rem;">📖 Setup instructions (one-time)</summary>
         <div style="margin-top:10px;font-size:.76rem;line-height:1.7;color:#555;">
@@ -603,7 +609,10 @@
           <p>3. Click <b>Deploy → New deployment → Type: Web app</b>. Set "Execute as: Me" and "Who has access: Anyone". Click Deploy and copy the Web App URL.</p>
           <p>4. Paste the URL above and click <b>Save URL</b>, then <b>Send All Data</b>.</p>
           <p style="margin-top:8px;"><b>Apps Script code (copy all):</b></p>
-          <textarea id="gs-script" readonly style="width:100%;min-height:280px;font-size:.72rem;font-family:monospace;">function doPost(e){
+          <textarea id="gs-script" readonly style="width:100%;min-height:300px;font-size:.72rem;font-family:monospace;">function doGet(e){
+  return ContentService.createTextOutput('Aakrithi Cement sync is running. Send data via POST.').setMimeType(ContentService.MimeType.TEXT);
+}
+function doPost(e){
   try{
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var raw = e.postData.contents;
@@ -619,9 +628,11 @@
     if(data.stock) writeSheet('Stock', data.stock);
     if(data.remaining) writeSheet('Remaining', data.remaining);
     if(data.bills) writeSheet('Bills', data.bills);
+    if(data.billItems) writeSheet('Bill Items', data.billItems);
     if(data.ledger) writeSheet('Ledger', data.ledger);
     if(data.expenses) writeSheet('Expenses', data.expenses);
     if(data.accounts) writeSheet('Accounts', data.accounts);
+    if(data.company) writeSheet('Company', data.company);
     return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
   }catch(err){
     return ContentService.createTextOutput(JSON.stringify({ok:false,error:String(err)})).setMimeType(ContentService.MimeType.JSON);
@@ -770,6 +781,7 @@ async function addStock() {
   }
   saveStock(list);
   renderStock(); renderProducts(); updateBrandFilter(); pcFill();
+  maybeSyncToSheets();
   ['st-brand','st-grade','st-stock','st-retail','st-wholesale'].forEach(id => byId(id).value = '');
   byId('st-hsn').value = '25232930';
   byId('st-date').value = todayISO();
@@ -846,6 +858,7 @@ function deleteStock(id) {
   if (!confirm('Delete this stock item?')) return;
   saveStock(getStock().filter(x => x.id !== id));
   renderStock(); renderProducts(); updateBrandFilter(); pcFill();
+  maybeSyncToSheets();
 }
 function updateBrandFilter() {
   const brands = [...new Set(getStock().map(x => x.brand))];
@@ -1060,6 +1073,7 @@ function saveBill(print) {
   if (print) printBill(bill);
   resetBill();
   renderStock(); renderProducts(); renderRemaining(); renderAccounts(); renderReports();
+  maybeSyncToSheets();
   return bill;
 }
 
@@ -1264,6 +1278,9 @@ function deleteBill(id) {
   if (!confirm('Delete this bill?')) return;
   SS('cem_bills', (MS('cem_bills') || []).filter(b => b.id !== id));
   renderBills();
+  renderAccounts();
+  renderReports();
+  maybeSyncToSheets();
 }
 let pendingBillPdfId = null;
 function attachBillPDF(id) {
@@ -1310,6 +1327,7 @@ function addLedgerEntry() {
   renderLedger();
   renderAccounts();
   renderReports();
+  maybeSyncToSheets();
   ['ld-party','ld-amt','ld-ref','ld-note'].forEach(id => byId(id).value = '');
   showToast('Ledger entry added');
 }
@@ -1345,6 +1363,9 @@ function deleteLedger(id) {
   if (!confirm('Delete this ledger entry?')) return;
   SS('cem_ledger', getLedger().filter(x => x.id !== id));
   renderLedger();
+  renderAccounts();
+  renderReports();
+  maybeSyncToSheets();
 }
 
 /* ---------- DATA BACKUP ---------- */
@@ -1438,6 +1459,7 @@ function addExpense() {
   renderExpenses();
   renderAccounts();
   renderReports();
+  maybeSyncToSheets();
   byId('ex-amt').value = '';
   byId('ex-name').value = '';
   byId('ex-note').value = '';
@@ -1448,6 +1470,8 @@ function deleteExpense(id) {
   saveExpenses(getExpenses().filter(e => e.id !== id));
   renderExpenses();
   renderAccounts();
+  renderReports();
+  maybeSyncToSheets();
 }
 function renderExpenses() {
   const list = getExpenses();
@@ -1524,12 +1548,48 @@ function renderAccounts() {
 }
 
 /* ---------- GOOGLE SHEETS ---------- */
-function getGsUrl() { return (localStorage.getItem('cem_gs_url') || '').trim(); }
+function getGsUrl() { return (localStorage.getItem('cem_gs_url') || 'https://script.google.com/macros/s/AKfycbyZVG-5nlpkYnZWa2Ap87w9HkvzHP5m4XMwtcEObR3G0jIQelVXPSd6RR-F9F-vTM25SA/exec').trim(); }
+function testGsUrl() {
+  const url = byId('gs-url').value.trim() || getGsUrl();
+  if (!url) { showToast('Paste the Apps Script URL first'); return; }
+  if (url.indexOf('script.google.com') === -1) {
+    showToast('⚠ This looks like a Google Sheet URL, not an Apps Script URL');
+    const st = byId('gs-status'); if (st) st.textContent = '⚠ Wrong URL type — need an Apps Script Web App URL (script.google.com/.../exec)';
+    return;
+  }
+  if (url.indexOf('/exec') === -1) {
+    showToast('⚠ URL must end with /exec');
+    const st = byId('gs-status'); if (st) st.textContent = '⚠ URL must end with /exec';
+    return;
+  }
+  window.open(url, '_blank');
+  showToast('Opened URL in new tab — check if it loads');
+}
 function saveGsUrl() {
   const url = byId('gs-url').value.trim();
   localStorage.setItem('cem_gs_url', url);
-  const st = byId('gs-status'); if (st) st.textContent = url ? '✓ URL saved' : 'URL cleared';
-  showToast(url ? '✓ Google Sheets URL saved' : 'URL cleared');
+  const st = byId('gs-status');
+  if (!url) { if (st) st.textContent = 'URL cleared'; showToast('URL cleared'); return; }
+  if (url.indexOf('script.google.com') === -1 || url.indexOf('/exec') === -1) {
+    if (st) st.textContent = '⚠ Wrong URL — must be an Apps Script Web App URL ending in /exec';
+    showToast('⚠ Wrong URL type');
+  } else {
+    if (st) st.textContent = '✓ URL saved';
+    showToast('✓ Google Sheets URL saved');
+  }
+}
+function getGsAuto() { return localStorage.getItem('cem_gs_auto') === '1'; }
+function saveGsAuto() {
+  const v = byId('gs-auto').checked;
+  localStorage.setItem('cem_gs_auto', v ? '1' : '0');
+}
+function maybeSyncToSheets() {
+  if (!getGsAuto()) return;
+  const url = getGsUrl();
+  if (!url) return;
+  // debounce
+  if (window.__gsTimer) clearTimeout(window.__gsTimer);
+  window.__gsTimer = setTimeout(function () { sendToGoogleSheets(); }, 1500);
 }
 function copyGsScript() {
   const ta = byId('gs-script');
@@ -1539,30 +1599,45 @@ function copyGsScript() {
 async function sendToGoogleSheets() {
   const url = getGsUrl() || byId('gs-url').value.trim();
   if (!url) { showToast('Paste the Apps Script URL first'); return; }
+  if (url.indexOf('script.google.com') === -1 || url.indexOf('/exec') === -1) {
+    showToast('⚠ Wrong URL — must be an Apps Script Web App URL ending in /exec');
+    const st = byId('gs-status'); if (st) st.textContent = '⚠ Wrong URL type';
+    return;
+  }
   localStorage.setItem('cem_gs_url', url);
   const status = byId('gs-status');
   if (status) status.textContent = 'Sending…';
   const stock = getStock().map(x => [x.date||'', x.brand, x.grade, x.weight, x.hsn, x.stock, x.retail, x.wholesale, x.gst]);
   const remaining = getStock().map(x => [x.brand, x.grade, x.weight, x.stock, x.retail, x.wholesale]);
-  const bills = (MS('cem_bills') || []).map(b => [b.invNo, b.date, b.cust, b.items.length, b.totals ? b.totals.grand : 0, b.payMode]);
+  const bills = (MS('cem_bills') || []).map(b => [b.invNo, b.date, b.cust, b.mobile || '', b.addr || '', b.custGst || '', b.payMode, b.note || '', b.items.length, (b.items || []).reduce((s, it) => s + (it.qty || 0), 0), b.totals ? b.totals.gross : 0, b.totals ? b.totals.discount : 0, b.totals ? b.totals.taxAfterDisc : 0, b.totals ? b.totals.transport : 0, b.totals ? b.totals.grand : 0]);
+  const billItems = [];
+  (MS('cem_bills') || []).forEach(b => {
+    (b.items || []).forEach(it => {
+      billItems.push([b.invNo, b.date, b.cust, it.item, it.hsn || '', it.qty, it.weight || '', it.rate, it.gst, (it.qty || 0) * (it.rate || 0) * (1 + (it.gst || 0) / 100)]);
+    });
+  });
   const ledger = getLedger().map(e => [e.date, e.party, e.type, e.drcr, e.amt, e.ref, e.note]);
   const expenses = getExpenses().map(e => [e.date, e.cat, e.amt, e.note]);
   const bills2 = MS('cem_bills') || [];
   const now = new Date(); const tk = todayISO();
   let today=0, month=0, year=0, total=0;
   bills2.forEach(b => { const a = b.totals?b.totals.grand:0; total+=a; if(b.date===tk) today+=a; if(String(b.date).slice(0,7)===tk.slice(0,7)) month+=a; if(String(b.date).slice(0,4)===tk.slice(0,4)) year+=a; });
+  const c = getCompany();
+  const company = [['Field','Value'],['Shop Name',c.name],['Tagline',c.tag],['Address',c.addr],['Phone',c.phone],['Email',c.email],['GSTIN',c.gstin],['Bank',c.bank],['Terms',c.terms]];
   const accounts = [['Metric','Amount'],['Today',today],['This Month',month],['This Year',year],['All Time',total],['Expenses',expenses.reduce((s,e)=>s+e.amt,0)],['Net',total-expenses.reduce((s,e)=>s+e.amt,0)]];
   const payload = {
     stock: [['Date','Brand','Grade','Weight','HSN','Stock','Retail','Wholesale','GST%']].concat(stock),
     remaining: [['Brand','Grade','Weight','Remaining','Retail','Wholesale']].concat(remaining),
-    bills: [['Invoice','Date','Customer','Items','Total','Payment']].concat(bills),
+    bills: [['Invoice','Date','Customer','Mobile','Address','GSTIN','Payment','Notes','Items','Total Bags','Taxable','Discount','Tax','Transport','Grand Total']].concat(bills),
+    billItems: [['Invoice','Date','Customer','Item','HSN','Qty','Weight','Rate','GST%','Amount']].concat(billItems),
     ledger: [['Date','Party','Type','Dr/Cr','Amount','Ref','Narration']].concat(ledger),
-    expenses: [['Date','Category','Amount','Note']].concat(expenses),
-    accounts: accounts
+    expenses: [['Date','Paid To','Category','Amount','Note']].concat(expenses),
+    accounts: accounts,
+    company: company
   };
   try {
     await fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
-    if (status) status.textContent = '✓ Sent (check your Google Sheet)';
+    if (status) status.textContent = '✓ Sent — check your Google Sheet (Sheets: Stock, Remaining, Bills, Ledger, Expenses, Accounts)';
     showToast('✓ Data sent to Google Sheets');
   } catch (e) {
     if (status) status.textContent = '✗ Failed: ' + e.message;
@@ -1867,6 +1942,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const sd = byId('st-date'); if (sd) sd.value = todayISO();
   const exd = byId('ex-date'); if (exd) exd.value = todayISO();
   const gsu = byId('gs-url'); if (gsu) gsu.value = getGsUrl();
+  const gsa = byId('gs-auto'); if (gsa) gsa.checked = getGsAuto();
   pcFill();
   renderCalcHistory();
   document.addEventListener('keydown', calcKeydown);
